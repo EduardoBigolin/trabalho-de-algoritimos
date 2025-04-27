@@ -2,310 +2,290 @@
 #include <string.h>
 #include <stdlib.h>
 
-struct Alunos {
-  char nome[20];
-  int idade;
+#define N 80
 
-  struct Alunos * next;
-  struct Alunos * prev;
-} typedef ALUNOS;
+typedef struct Alunos {
+    char nome[N];
+    int idade;
 
-struct Grupos {
-  char nome[20];
-  int numeroDeAlunos;
+    struct Alunos* next;
+    struct Alunos* prev;
+} ALUNOS;
 
-  struct Grupos* next;
-  struct Grupos* prev;
+typedef struct Grupos {
+    char nome[N];
+    int numeroDeAlunos;
 
-  ALUNOS* start;
-  ALUNOS* and;
-} typedef GRUPOS;
+    struct Grupos* next;
+    struct Grupos* prev;
 
-struct Turma {
-  int codigo;
-  int numeroGrupo;
-  int numeroAlunosSemGrupo;
-  int numeroAlunosTotal;
+    ALUNOS* start;
+    ALUNOS* and;
+} GRUPOS;
 
-  ALUNOS* startAlunos;
-  ALUNOS* andAlunos;
+typedef struct Turma {
+    int codigo;
+    int numeroGrupo;
+    int numeroAlunosSemGrupo;
+    int numeroAlunosTotal;
 
-  struct Turma* next;
-  struct Turma* prev;
-  
-  GRUPOS* startGrupos;
-  GRUPOS* andGrupos;
-} typedef TURMA;
+    ALUNOS* startAlunos;
+    ALUNOS* andAlunos;
 
-struct Disciplina {
-  struct Disciplina* next;
-  struct Disciplina* prev;
+    struct Turma* next;
+    struct Turma* prev;
 
-  char nome[20];
-  int numeroDeTurma;
+    GRUPOS* startGrupos;
+    GRUPOS* andGrupos;
+} TURMA;
 
-  TURMA* startTurma;
-  TURMA* andTurma;
-} typedef DISCIPLINAS;
+typedef struct Disciplina {
+    struct Disciplina* next;
+    struct Disciplina* prev;
 
-struct Escola {
-  char nome[20];
-  int numeroDeDisciplina;
+    char nome[N];
+    int numeroDeTurma;
 
-  DISCIPLINAS* startDisciplina;
-  DISCIPLINAS* andDisciplina;
-} typedef ESCOLA;
+    TURMA* startTurma;
+    TURMA* andTurma;
+} DISCIPLINAS;
+
+typedef struct Escola {
+    char nome[N];
+    int numeroDeDisciplina;
+
+    DISCIPLINAS* startDisciplina;
+    DISCIPLINAS* andDisciplina;
+} ESCOLA;
+
 void printDisciplinas(ESCOLA* escola) {
-  if (escola->startDisciplina == NULL) {
-      printf("Nenhuma disciplina cadastrada.\n");
-      return;
-  }
+    if (escola->startDisciplina == NULL) {
+        printf("Nenhuma disciplina cadastrada.\n");
+        return;
+    }
 
-  printf("Escola: %s\n", escola->nome);
-  printf("Total de disciplinas: %d\n", escola->numeroDeDisciplina);
-  printf("========================================\n");
+    printf("Escola: %s\n", escola->nome);
+    printf("Total de disciplinas: %d\n", escola->numeroDeDisciplina);
+    printf("========================================\n");
 
-  DISCIPLINAS* atualDisc = escola->startDisciplina;
-  int countDisc = 1;
+    DISCIPLINAS* atualDisc = escola->startDisciplina;
+    int countDisc = 1;
 
-  while (atualDisc != NULL) {
-      printf("%d. Disciplina: %s\n", countDisc++, atualDisc->nome);
-      printf("   Total de turmas: %d\n", atualDisc->numeroDeTurma);
+    while (atualDisc != NULL) {
+        printf("%d. Disciplina: %s\n", countDisc++, atualDisc->nome);
+        printf("   Total de turmas: %d\n", atualDisc->numeroDeTurma);
 
-      TURMA* atualTurma = atualDisc->startTurma;
-      if (atualTurma == NULL) {
-          printf("   Nenhuma turma cadastrada.\n");
-      } else {
-          while (atualTurma != NULL) {
-              printf("   -> Turma Código: %d Numero total de alunos: %d\n", atualTurma->codigo, atualTurma->numeroAlunosTotal);
-              printf("      Alunos sem grupos(total: %d):\n", atualTurma->numeroAlunosSemGrupo);
+        TURMA* atualTurma = atualDisc->startTurma;
+        if (atualTurma == NULL) {
+            printf("   Nenhuma turma cadastrada.\n");
+        } else {
+            while (atualTurma != NULL) {
+                printf("   -> Turma Codigo: %d Numero total de alunos: %d\n", atualTurma->codigo, atualTurma->numeroAlunosTotal);
+                printf("      Alunos sem grupos(total: %d):\n", atualTurma->numeroAlunosSemGrupo);
 
-              ALUNOS* atualAluno = atualTurma->startAlunos;
-              if (atualAluno == NULL) {
-                  printf("         Nenhum aluno cadastrado.\n");
-              } else {
-                  while (atualAluno != NULL) {
-                      printf("         - %s (idade: %d)\n", atualAluno->nome, atualAluno->idade);
-                      atualAluno = atualAluno->next;
-                  }
-              }
+                ALUNOS* atualAluno = atualTurma->startAlunos;
+                if (atualAluno == NULL) {
+                    printf("         Nenhum aluno cadastrado.\n");
+                } else {
+                    while (atualAluno != NULL) {
+                        printf("         - %s (idade: %d)\n", atualAluno->nome, atualAluno->idade);
+                        atualAluno = atualAluno->next;
+                    }
+                }
 
-              // Grupos da Turma
-              GRUPOS* atualGrupo = atualTurma->startGrupos;
-              printf("      Grupos (total: %d):\n", atualTurma->numeroGrupo);
-              if (atualGrupo == NULL) {
-                  printf("         Nenhum grupo cadastrado.\n");
-              } else {
-                  while (atualGrupo != NULL) {
-                      printf("         - Grupo: %s (Alunos: %d)\n", atualGrupo->nome, atualGrupo->numeroDeAlunos);
-                      atualGrupo = atualGrupo->next;
-                  }
-              }
+                GRUPOS* atualGrupo = atualTurma->startGrupos;
+                printf("      Grupos (total: %d):\n", atualTurma->numeroGrupo);
+                if (atualGrupo == NULL) {
+                    printf("         Nenhum grupo cadastrado.\n");
+                } else {
+                    while (atualGrupo != NULL) {
+                        printf("         - Grupo: %s (Alunos: %d)\n", atualGrupo->nome, atualGrupo->numeroDeAlunos);
+                        atualGrupo = atualGrupo->next;
+                    }
+                }
 
-              atualTurma = atualTurma->next;
-          }
-      }
+                atualTurma = atualTurma->next;
+            }
+        }
 
-      printf("========================================\n");
-      atualDisc = atualDisc->next;
-  }
+        printf("========================================\n");
+        atualDisc = atualDisc->next;
+    }
 }
-void createListOfDisciplinas(ESCOLA* escola, char nome[20]){
-  DISCIPLINAS* newDisciplina = (DISCIPLINAS*) malloc(sizeof(DISCIPLINAS));
-  if(newDisciplina == NULL) {
-    //! add error
-  }
-  strcpy(newDisciplina->nome, nome);
-  newDisciplina->numeroDeTurma = 0;
-  newDisciplina->andTurma = NULL;
-  newDisciplina->startTurma = NULL;
-  if(escola->andDisciplina == NULL) {
-    escola->startDisciplina = newDisciplina;
-    escola->andDisciplina = newDisciplina;
-  }else {
-    DISCIPLINAS* aux = escola->andDisciplina;
-    escola->andDisciplina = newDisciplina;
-    newDisciplina->prev = aux;
-    aux->next = newDisciplina;
-  }
-  escola->numeroDeDisciplina++;
+
+void createListOfDisciplinas(ESCOLA* escola, char nome[N]) {
+    DISCIPLINAS* newDisciplina = (DISCIPLINAS*)malloc(sizeof(DISCIPLINAS));
+    if (!newDisciplina) return;
+
+    strcpy(newDisciplina->nome, nome);
+    newDisciplina->numeroDeTurma = 0;
+    newDisciplina->startTurma = NULL;
+    newDisciplina->andTurma = NULL;
+    newDisciplina->next = NULL;
+    newDisciplina->prev = NULL;
+
+    if (escola->andDisciplina == NULL) {
+        escola->startDisciplina = newDisciplina;
+        escola->andDisciplina = newDisciplina;
+    } else {
+        DISCIPLINAS* aux = escola->andDisciplina;
+        aux->next = newDisciplina;
+        newDisciplina->prev = aux;
+        escola->andDisciplina = newDisciplina;
+    }
+
+    escola->numeroDeDisciplina++;
 }
 
 void createListOfTurmas(DISCIPLINAS* disciplina, int codigo) {
-  if (disciplina == NULL) {
-      printf("Erro: disciplina nula.\n");
-      return;
-  }
+    TURMA* newTurma = (TURMA*)malloc(sizeof(TURMA));
+    if (!newTurma) return;
 
-  TURMA* newTurma = (TURMA*) malloc(sizeof(TURMA));
-  if (newTurma == NULL) {
-      printf("Erro ao alocar memória para nova turma.\n");
-      return;
-  }
+    newTurma->codigo = codigo;
+    newTurma->numeroAlunosTotal = 0;
+    newTurma->numeroAlunosSemGrupo = 0;
+    newTurma->numeroGrupo = 0;
 
-  newTurma->codigo = codigo;
-  newTurma->next = NULL;
-  newTurma->prev = NULL;
+    newTurma->startAlunos = NULL;
+    newTurma->andAlunos = NULL;
+    newTurma->startGrupos = NULL;
+    newTurma->andGrupos = NULL;
 
-  if (disciplina->andTurma == NULL) {
-      disciplina->startTurma = newTurma;
-      disciplina->andTurma = newTurma;
-  } else {
-      TURMA* aux = disciplina->andTurma;
-      disciplina->andTurma = newTurma;
-      newTurma->prev = aux;
-      aux->next = newTurma;
-  }
+    newTurma->next = NULL;
+    newTurma->prev = NULL;
 
-  disciplina->numeroDeTurma++;
+    if (disciplina->andTurma == NULL) {
+        disciplina->startTurma = newTurma;
+        disciplina->andTurma = newTurma;
+    } else {
+        TURMA* aux = disciplina->andTurma;
+        aux->next = newTurma;
+        newTurma->prev = aux;
+        disciplina->andTurma = newTurma;
+    }
+
+    disciplina->numeroDeTurma++;
 }
 
+void createListOfAlunosTurma(TURMA* turma, char nome[N], int idade) {
+    ALUNOS* newAluno = (ALUNOS*)malloc(sizeof(ALUNOS));
+    if (!newAluno) return;
 
-void createListOfAlunosTurma(TURMA* turma, char nome[20], int idade) {
-  if (turma == NULL) {
-      printf("Erro: turma nula.\n");
-      return;
-  }
+    strcpy(newAluno->nome, nome);
+    newAluno->idade = idade;
+    newAluno->next = NULL;
+    newAluno->prev = NULL;
 
-  ALUNOS* newAluno = (ALUNOS*) malloc(sizeof(ALUNOS));
-  if (newAluno == NULL) {
-      printf("Erro ao alocar memória para nova aluno.\n");
-      return;
-  }
+    if (turma->andAlunos == NULL) {
+        turma->startAlunos = newAluno;
+        turma->andAlunos = newAluno;
+    } else {
+        ALUNOS* aux = turma->andAlunos;
+        aux->next = newAluno;
+        newAluno->prev = aux;
+        turma->andAlunos = newAluno;
+    }
 
-  strcpy(newAluno->nome, nome);
-  newAluno->idade = idade;
-
-  newAluno->next = NULL;
-  newAluno->prev = NULL;
-
-  if (turma->andAlunos == NULL) {
-    turma->startAlunos = newAluno;
-    turma->andAlunos = newAluno;
-  } else {
-      ALUNOS* aux = turma->andAlunos;
-      turma->andAlunos = newAluno;
-      newAluno->prev = aux;
-      aux->next = newAluno;
-  }
-
-  turma->numeroAlunosTotal++;
-  turma->numeroAlunosSemGrupo++;
+    turma->numeroAlunosTotal++;
+    turma->numeroAlunosSemGrupo++;
 }
 
-void createListOfGruposTurma(TURMA* turma, char nome[20]) {
-  if (turma == NULL) {
-    printf("Erro: turma nula.\n");
-      return;
-  }
+void createListOfGruposTurma(TURMA* turma, char nome[N]) {
+    GRUPOS* newGrupo = (GRUPOS*)malloc(sizeof(GRUPOS));
+    if (!newGrupo) return;
 
-  GRUPOS* newGrupo = (GRUPOS*) malloc(sizeof(GRUPOS));
-  if (newGrupo == NULL) {
-      printf("Erro ao alocar memória para nova aluno.\n");
-      return;
-  }
+    strcpy(newGrupo->nome, nome);
+    newGrupo->numeroDeAlunos = 0;
+    newGrupo->start = NULL;
+    newGrupo->and = NULL;
+    newGrupo->next = NULL;
+    newGrupo->prev = NULL;
 
-  strcpy(newGrupo->nome, nome);
+    if (turma->andGrupos == NULL) {
+        turma->startGrupos = newGrupo;
+        turma->andGrupos = newGrupo;
+    } else {
+        GRUPOS* aux = turma->andGrupos;
+        aux->next = newGrupo;
+        newGrupo->prev = aux;
+        turma->andGrupos = newGrupo;
+    }
 
-  newGrupo->next = NULL;
-  newGrupo->prev = NULL;
-
-  if (turma->andGrupos == NULL) {
-    turma->startGrupos = newGrupo;
-    turma->andGrupos = newGrupo;
-  } else {
-      GRUPOS* aux = turma->andGrupos;
-      turma->andGrupos = newGrupo;
-      newGrupo->prev = aux;
-      aux->next = newGrupo;
-  }
-
-  turma->numeroGrupo++;
+    turma->numeroGrupo++;
 }
-void moverAlunoParaGrupo(TURMA* turma, char nomeAluno[20], char nomeGrupo[20]) {
-  if (turma == NULL) {
-      printf("Erro: turma nula.\n");
-      return;
-  }
 
-  // 1. Procurar o aluno na lista da turma
-  ALUNOS* aluno = turma->startAlunos;
-  while (aluno != NULL && strcmp(aluno->nome, nomeAluno) != 0) {
-      aluno = aluno->next;
-  }
+void moverAlunoParaGrupo(TURMA* turma, char nomeAluno[N], char nomeGrupo[N]) {
+    ALUNOS* aluno = turma->startAlunos;
+    while (aluno && strcmp(aluno->nome, nomeAluno) != 0)
+        aluno = aluno->next;
 
-  if (aluno == NULL) {
-      printf("Aluno '%s' não encontrado na turma.\n", nomeAluno);
-      return;
-  }
+    if (!aluno) {
+        printf("Aluno '%s' não encontrado na turma.\n", nomeAluno);
+        return;
+    }
 
-  // 2. Procurar o grupo pelo nome
-  GRUPOS* grupo = turma->startGrupos;
-  while (grupo != NULL && strcmp(grupo->nome, nomeGrupo) != 0) {
-      grupo = grupo->next;
-  }
+    GRUPOS* grupo = turma->startGrupos;
+    while (grupo && strcmp(grupo->nome, nomeGrupo) != 0)
+        grupo = grupo->next;
 
-  if (grupo == NULL) {
-      printf("Grupo '%s' não encontrado na turma.\n", nomeGrupo);
-      return;
-  }
+    if (!grupo) {
+        printf("Grupo '%s' não encontrado na turma.\n", nomeGrupo);
+        return;
+    }
 
-  // 3. Remover aluno da lista geral da turma
-  if (aluno->prev != NULL) aluno->prev->next = aluno->next;
-  else turma->startAlunos = aluno->next;
-  
-  if (aluno->next != NULL) aluno->next->prev = aluno->prev;
-  else turma->andAlunos = aluno->prev;
-  
-  aluno->next = NULL;
-  aluno->prev = NULL;
+    // Remove aluno da lista geral
+    if (aluno->prev) aluno->prev->next = aluno->next;
+    else turma->startAlunos = aluno->next;
 
-  turma->numeroAlunosSemGrupo--;
+    if (aluno->next) aluno->next->prev = aluno->prev;
+    else turma->andAlunos = aluno->prev;
 
-  // 4. Adicionar aluno ao grupo (fim da lista do grupo)
-  if (grupo->and == NULL) {
-      grupo->start = aluno;
-      grupo->and = aluno;
-  } else {
-      aluno->prev = grupo->and;
-      grupo->and->next = aluno;
-      grupo->and = aluno;
-  }
+    aluno->next = NULL;
+    aluno->prev = NULL;
 
-  grupo->numeroDeAlunos++;
+    turma->numeroAlunosSemGrupo--;
+
+    // Adiciona no grupo
+    if (!grupo->and) {
+        grupo->start = aluno;
+        grupo->and = aluno;
+    } else {
+        grupo->and->next = aluno;
+        aluno->prev = grupo->and;
+        grupo->and = aluno;
+    }
+
+    grupo->numeroDeAlunos++;
 }
 
 int main() {
-  // Criando Escola
-  ESCOLA escola;
-  // Solicitar o nome 
-  strcpy(escola.nome, "Universidade de Caxias do Sul");
-  
-  createListOfDisciplinas(&escola, "Matematica");
-  createListOfTurmas(escola.andDisciplina, 100);
-  createListOfAlunosTurma(escola.andDisciplina->andTurma, "Eduardo", 12);
-  createListOfGruposTurma(escola.andDisciplina->andTurma, "Grupo 01");
-  createListOfGruposTurma(escola.andDisciplina->andTurma, "Grupo 02");
-  moverAlunoParaGrupo(escola.andDisciplina->andTurma, "Eduardo", "Grupo 01");
-  createListOfTurmas(escola.andDisciplina, 101);
-  
-  createListOfDisciplinas(&escola, "Portugues");
-  createListOfTurmas(escola.andDisciplina, 102);
-  createListOfAlunosTurma(escola.andDisciplina->andTurma, "Ana", 20);
-  createListOfAlunosTurma(escola.andDisciplina->andTurma, "Lucas", 22);
-  createListOfGruposTurma(escola.andDisciplina->andTurma, "Grupo 01");
-  createListOfTurmas(escola.andDisciplina, 103);
-  
-  createListOfDisciplinas(&escola, "Ingles");
-  createListOfTurmas(escola.andDisciplina, 104);
-  createListOfTurmas(escola.andDisciplina, 105);
+    ESCOLA escola = { .numeroDeDisciplina = 0, .startDisciplina = NULL, .andDisciplina = NULL };
+    strcpy(escola.nome, "Universidade de Caxias do Sul");
 
-  createListOfDisciplinas(&escola, "Geografia");
-  createListOfTurmas(escola.andDisciplina, 106);
-  createListOfTurmas(escola.andDisciplina, 107);
+    createListOfDisciplinas(&escola, "Matematica");
+    createListOfTurmas(escola.andDisciplina, 100);
+    createListOfAlunosTurma(escola.andDisciplina->andTurma, "Eduardo", 12);
+    createListOfGruposTurma(escola.andDisciplina->andTurma, "Grupo 01");
+    createListOfGruposTurma(escola.andDisciplina->andTurma, "Grupo 02");
+    moverAlunoParaGrupo(escola.andDisciplina->andTurma, "Eduardo", "Grupo 01");
+    createListOfTurmas(escola.andDisciplina, 101);
 
-  printDisciplinas(&escola);
+    createListOfDisciplinas(&escola, "Portugues");
+    createListOfTurmas(escola.andDisciplina, 102);
+    createListOfAlunosTurma(escola.andDisciplina->andTurma, "Ana", 20);
+    createListOfAlunosTurma(escola.andDisciplina->andTurma, "Lucas", 22);
+    createListOfGruposTurma(escola.andDisciplina->andTurma, "Grupo 01");
+    createListOfTurmas(escola.andDisciplina, 103);
 
+    createListOfDisciplinas(&escola, "Ingles");
+    createListOfTurmas(escola.andDisciplina, 104);
+    createListOfTurmas(escola.andDisciplina, 105);
 
-  return 0;
+    createListOfDisciplinas(&escola, "Geografia");
+    createListOfTurmas(escola.andDisciplina, 106);
+    createListOfTurmas(escola.andDisciplina, 107);
+
+    printDisciplinas(&escola);
+
+    return 0;
 }
