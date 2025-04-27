@@ -29,36 +29,39 @@ typedef struct Turma {
     int numeroAlunosSemGrupo;
     int numeroAlunosTotal;
 
-    ALUNOS* startAlunos;
-    ALUNOS* andAlunos;
+    ALUNOS *startAlunos;
+    ALUNOS *endAlunos;
 
     struct Turma* next;
     struct Turma* prev;
+    struct Turma *next;
+    struct Turma *prev;
 
-    GRUPOS* startGrupos;
-    GRUPOS* andGrupos;
+    GRUPOS *startGrupos;
+    GRUPOS *endGrupos;
 } TURMA;
 
 typedef struct Disciplina {
     struct Disciplina* next;
     struct Disciplina* prev;
+    struct Disciplina *next;
 
     char nome[N];
     int numeroDeTurma;
 
-    TURMA* startTurma;
-    TURMA* andTurma;
+    TURMA *startTurma;
+    TURMA *endTurma;
 } DISCIPLINAS;
 
 typedef struct Escola {
     char nome[N];
     int numeroDeDisciplina;
 
-    DISCIPLINAS* startDisciplina;
-    DISCIPLINAS* andDisciplina;
+    DISCIPLINAS *startDisciplina;
+    DISCIPLINAS *endDisciplina;
 } ESCOLA;
 
-void printDisciplinas(ESCOLA* escola) {
+void printDisciplinas(ESCOLA *escola) {
     if (escola->startDisciplina == NULL) {
         printf("Nenhuma disciplina cadastrada.\n");
         return;
@@ -68,7 +71,7 @@ void printDisciplinas(ESCOLA* escola) {
     printf("Total de disciplinas: %d\n", escola->numeroDeDisciplina);
     printf("========================================\n");
 
-    DISCIPLINAS* atualDisc = escola->startDisciplina;
+    DISCIPLINAS *atualDisc = escola->startDisciplina;
     int countDisc = 1;
 
     while (atualDisc != NULL) {
@@ -83,7 +86,7 @@ void printDisciplinas(ESCOLA* escola) {
                 printf("   -> Turma Codigo: %d Numero total de alunos: %d\n", atualTurma->codigo, atualTurma->numeroAlunosTotal);
                 printf("      Alunos sem grupos(total: %d):\n", atualTurma->numeroAlunosSemGrupo);
 
-                ALUNOS* atualAluno = atualTurma->startAlunos;
+                ALUNOS *atualAluno = atualTurma->startAlunos;
                 if (atualAluno == NULL) {
                     printf("         Nenhum aluno cadastrado.\n");
                 } else {
@@ -93,7 +96,7 @@ void printDisciplinas(ESCOLA* escola) {
                     }
                 }
 
-                GRUPOS* atualGrupo = atualTurma->startGrupos;
+                GRUPOS *atualGrupo = atualTurma->startGrupos;
                 printf("      Grupos (total: %d):\n", atualTurma->numeroGrupo);
                 if (atualGrupo == NULL) {
                     printf("         Nenhum grupo cadastrado.\n");
@@ -113,32 +116,32 @@ void printDisciplinas(ESCOLA* escola) {
     }
 }
 
-void createListOfDisciplinas(ESCOLA* escola, char nome[N]) {
-    DISCIPLINAS* newDisciplina = (DISCIPLINAS*)malloc(sizeof(DISCIPLINAS));
+void addDisciplinaEscola(ESCOLA *escola, char nome[N]) {
+    DISCIPLINAS *newDisciplina = (DISCIPLINAS *) malloc(sizeof(DISCIPLINAS));
     if (!newDisciplina) return;
 
     strcpy(newDisciplina->nome, nome);
     newDisciplina->numeroDeTurma = 0;
     newDisciplina->startTurma = NULL;
-    newDisciplina->andTurma = NULL;
+    newDisciplina->endTurma = NULL;
     newDisciplina->next = NULL;
     newDisciplina->prev = NULL;
 
-    if (escola->andDisciplina == NULL) {
+    if (escola->endDisciplina == NULL) {
         escola->startDisciplina = newDisciplina;
-        escola->andDisciplina = newDisciplina;
+        escola->endDisciplina = newDisciplina;
     } else {
-        DISCIPLINAS* aux = escola->andDisciplina;
+        DISCIPLINAS *aux = escola->endDisciplina;
         aux->next = newDisciplina;
         newDisciplina->prev = aux;
-        escola->andDisciplina = newDisciplina;
+        escola->endDisciplina = newDisciplina;
     }
 
     escola->numeroDeDisciplina++;
 }
 
-void createListOfTurmas(DISCIPLINAS* disciplina, int codigo) {
-    TURMA* newTurma = (TURMA*)malloc(sizeof(TURMA));
+void addTurmaDisciplina(DISCIPLINAS *disciplina, int codigo) {
+    TURMA *newTurma = (TURMA *) malloc(sizeof(TURMA));
     if (!newTurma) return;
 
     newTurma->codigo = codigo;
@@ -147,28 +150,28 @@ void createListOfTurmas(DISCIPLINAS* disciplina, int codigo) {
     newTurma->numeroGrupo = 0;
 
     newTurma->startAlunos = NULL;
-    newTurma->andAlunos = NULL;
+    newTurma->endAlunos = NULL;
     newTurma->startGrupos = NULL;
-    newTurma->andGrupos = NULL;
+    newTurma->endGrupos = NULL;
 
     newTurma->next = NULL;
     newTurma->prev = NULL;
 
-    if (disciplina->andTurma == NULL) {
+    if (disciplina->endTurma == NULL) {
         disciplina->startTurma = newTurma;
-        disciplina->andTurma = newTurma;
+        disciplina->endTurma = newTurma;
     } else {
-        TURMA* aux = disciplina->andTurma;
+        TURMA *aux = disciplina->endTurma;
         aux->next = newTurma;
         newTurma->prev = aux;
-        disciplina->andTurma = newTurma;
+        disciplina->endTurma = newTurma;
     }
 
     disciplina->numeroDeTurma++;
 }
 
-void createListOfAlunosTurma(TURMA* turma, char nome[N], int idade) {
-    ALUNOS* newAluno = (ALUNOS*)malloc(sizeof(ALUNOS));
+void addAlunoEscola(ESCOLA *escola, char nome[N], int idade) {
+    ALUNOS *newAluno = (ALUNOS *) malloc(sizeof(ALUNOS));
     if (!newAluno) return;
 
     strcpy(newAluno->nome, nome);
@@ -176,46 +179,72 @@ void createListOfAlunosTurma(TURMA* turma, char nome[N], int idade) {
     newAluno->next = NULL;
     newAluno->prev = NULL;
 
-    if (turma->andAlunos == NULL) {
-        turma->startAlunos = newAluno;
-        turma->andAlunos = newAluno;
+    if (escola->endAlunos == NULL) {
+        escola->startAlunos = newAluno;
+        escola->endAlunos = newAluno;
     } else {
-        ALUNOS* aux = turma->andAlunos;
+        ALUNOS *aux = escola->endAlunos;
         aux->next = newAluno;
         newAluno->prev = aux;
-        turma->andAlunos = newAluno;
+        escola->endAlunos = newAluno;
+    }
+
+    escola->numeroAlunosTotal++;
+}
+
+void addAlunoTurma(TURMA *turma, char nome[N], int idade) {
+    ALUNOS *newAluno = (ALUNOS *) malloc(sizeof(ALUNOS));
+    if (!newAluno) return;
+
+    strcpy(newAluno->nome, nome);
+    newAluno->idade = idade;
+    newAluno->next = NULL;
+    newAluno->prev = NULL;
+
+    if (turma->endAlunos == NULL) {
+        turma->startAlunos = newAluno;
+        turma->endAlunos = newAluno;
+    } else {
+        ALUNOS *aux = turma->endAlunos;
+        aux->next = newAluno;
+        newAluno->prev = aux;
+        turma->endAlunos = newAluno;
     }
 
     turma->numeroAlunosTotal++;
     turma->numeroAlunosSemGrupo++;
 }
 
-void createListOfGruposTurma(TURMA* turma, char nome[N]) {
-    GRUPOS* newGrupo = (GRUPOS*)malloc(sizeof(GRUPOS));
+ALUNOS getAlunoByNome() {
+
+}
+
+void addGrupoTurma(TURMA *turma, char nome[N]) {
+    GRUPOS *newGrupo = (GRUPOS *) malloc(sizeof(GRUPOS));
     if (!newGrupo) return;
 
     strcpy(newGrupo->nome, nome);
     newGrupo->numeroDeAlunos = 0;
     newGrupo->start = NULL;
-    newGrupo->and = NULL;
+    newGrupo->end = NULL;
     newGrupo->next = NULL;
     newGrupo->prev = NULL;
 
-    if (turma->andGrupos == NULL) {
+    if (turma->endGrupos == NULL) {
         turma->startGrupos = newGrupo;
-        turma->andGrupos = newGrupo;
+        turma->endGrupos = newGrupo;
     } else {
-        GRUPOS* aux = turma->andGrupos;
+        GRUPOS *aux = turma->endGrupos;
         aux->next = newGrupo;
         newGrupo->prev = aux;
-        turma->andGrupos = newGrupo;
+        turma->endGrupos = newGrupo;
     }
 
     turma->numeroGrupo++;
 }
 
-void moverAlunoParaGrupo(TURMA* turma, char nomeAluno[N], char nomeGrupo[N]) {
-    ALUNOS* aluno = turma->startAlunos;
+void moverAlunoParaGrupo(TURMA *turma, char nomeAluno[N], char nomeGrupo[N]) {
+    ALUNOS *aluno = turma->startAlunos;
     while (aluno && strcmp(aluno->nome, nomeAluno) != 0)
         aluno = aluno->next;
 
@@ -224,7 +253,7 @@ void moverAlunoParaGrupo(TURMA* turma, char nomeAluno[N], char nomeGrupo[N]) {
         return;
     }
 
-    GRUPOS* grupo = turma->startGrupos;
+    GRUPOS *grupo = turma->startGrupos;
     while (grupo && strcmp(grupo->nome, nomeGrupo) != 0)
         grupo = grupo->next;
 
@@ -238,7 +267,7 @@ void moverAlunoParaGrupo(TURMA* turma, char nomeAluno[N], char nomeGrupo[N]) {
     else turma->startAlunos = aluno->next;
 
     if (aluno->next) aluno->next->prev = aluno->prev;
-    else turma->andAlunos = aluno->prev;
+    else turma->endAlunos = aluno->prev;
 
     aluno->next = NULL;
     aluno->prev = NULL;
@@ -246,13 +275,13 @@ void moverAlunoParaGrupo(TURMA* turma, char nomeAluno[N], char nomeGrupo[N]) {
     turma->numeroAlunosSemGrupo--;
 
     // Adiciona no grupo
-    if (!grupo->and) {
+    if (!grupo->end) {
         grupo->start = aluno;
-        grupo->and = aluno;
+        grupo->end = aluno;
     } else {
-        grupo->and->next = aluno;
-        aluno->prev = grupo->and;
-        grupo->and = aluno;
+        grupo->end->next = aluno;
+        aluno->prev = grupo->end;
+        grupo->end = aluno;
     }
 
     grupo->numeroDeAlunos++;
