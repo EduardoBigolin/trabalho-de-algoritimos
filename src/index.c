@@ -83,6 +83,34 @@ void getTextInput(char *text) {
     strcpy(text, str);
 }
 
+
+/**
+ * @brief Checks if a specified student is already a member of any group within a given class (turma).
+ *
+ * @param turma Pointer to the TURMA structure, representing the class being checked.
+ * @param nomeAluno Pointer to a character array containing the name of the student to be checked.
+ *
+ * @return ERR_ALREADY_IN_GROUP if the student is found in any group,
+ *         OK if the student is not in any group.
+ *
+ * @note This function assumes the structure of TURMA, GRUPOS, and ALUNOS
+ *       is well-defined and that the pointers within the structures are properly initialized.
+ */
+int checkAlunoInGroup(TURMA *turma, char *nomeAluno) {
+    GRUPOS *grupoCheck = turma->startGrupos;
+    while (grupoCheck) {
+        ALUNOS *grupoAluno = grupoCheck->start;
+        while (grupoAluno) {
+            if (strcmp(grupoAluno->nome, nomeAluno) == 0) {
+                return ERR_ALREADY_IN_GROUP;
+            }
+            grupoAluno = grupoAluno->next;
+        }
+        grupoCheck = grupoCheck->next;
+    }
+    return OK;
+}
+
 /**
  * @brief Displays the details of a group, including its name, the total number of students,
  *        and a list of all students in the group with their respective names and ages.
@@ -132,14 +160,16 @@ void listTurma(TURMA *turma) {
     printf("   -> Turma Codigo: %s\n      Numero total de alunos: %d\n", turma->codigo,
            turma->numeroAlunosTotal);
 
-    printf("      Alunos sem grupos (total: %d):\n", turma->numeroAlunosSemGrupo);
+    printf("      Alunos sem grupo (total: %d):\n", turma->numeroAlunosSemGrupo);
 
     ALUNOS *currAluno = turma->startAlunos;
     if (currAluno == NULL) {
         printf("         Nenhum aluno sem grupo.\n");
     } else {
         while (currAluno != NULL) {
-            printf("         - %s (idade: %d)\n", currAluno->nome, currAluno->idade);
+            if (checkAlunoInGroup(turma, currAluno->nome) == OK) {
+                printf("         - %s (idade: %d)\n", currAluno->nome, currAluno->idade);
+            }
             currAluno = currAluno->next;
         }
     }
@@ -537,26 +567,22 @@ void addAlunoToGrupo(TURMA *turma, char *nomeAluno, char *nomeGrupo) {
         return;
     }
 
-    // Remove aluno da lista geral
-    if (aluno->prev) aluno->prev->next = aluno->next;
-    else turma->startAlunos = aluno->next;
-
-    if (aluno->next) aluno->next->prev = aluno->prev;
-    else turma->endAlunos = aluno->prev;
-
-    aluno->next = NULL;
-    aluno->prev = NULL;
+    ALUNOS *alunoCopy = (ALUNOS *) malloc(sizeof(ALUNOS));
+    strcpy(alunoCopy->nome, aluno->nome);
+    alunoCopy->idade = aluno->idade;
+    alunoCopy->next = NULL;
+    alunoCopy->prev = NULL;
 
     turma->numeroAlunosSemGrupo--;
 
     // Adiciona no grupo
     if (!grupo->end) {
-        grupo->start = aluno;
-        grupo->end = aluno;
+        grupo->start = alunoCopy;
+        grupo->end = alunoCopy;
     } else {
-        grupo->end->next = aluno;
-        aluno->prev = grupo->end;
-        grupo->end = aluno;
+        grupo->end->next = alunoCopy;
+        alunoCopy->prev = grupo->end;
+        grupo->end = alunoCopy;
     }
 
     grupo->numeroDeAlunos++;
@@ -683,8 +709,6 @@ int menu_addAlunoToTurma(ESCOLA *escola) {
     printf("Digite o nome do aluno:\n");
     getTextInput(nome);
 
-    printf("%s\n", nome);
-
     if (addAlunoTurma(escola, turma, nome) == ERROR) {
         return ERROR;
     }
@@ -719,34 +743,6 @@ int menu_addGrupo(ESCOLA *escola) {
 }
 
 /**
- * @brief Checks if a specified student is already a member of any group within a given class (turma).
- *
- * @param turma Pointer to the TURMA structure, representing the class being checked.
- * @param nomeAluno Pointer to a character array containing the name of the student to be checked.
- *
- * @return ERR_ALREADY_IN_GROUP if the student is found in any group,
- *         OK if the student is not in any group.
- *
- * @note This function assumes the structure of TURMA, GRUPOS, and ALUNOS
- *       is well-defined and that the pointers within the structures are properly initialized.
- */
-int menu_checkAlunoInGroup(TURMA *turma, char *nomeAluno) {
-    GRUPOS *grupoCheck = turma->startGrupos;
-    while (grupoCheck) {
-        ALUNOS *grupoAluno = grupoCheck->start;
-        while (grupoAluno) {
-            if (strcmp(grupoAluno->nome, nomeAluno) == 0) {
-                printf("Aluno '%s' já está em um grupo.\n", nomeAluno);
-                return ERR_ALREADY_IN_GROUP;
-            }
-            grupoAluno = grupoAluno->next;
-        }
-        grupoCheck = grupoCheck->next;
-    }
-    return OK;
-}
-
-/**
  * @brief Adds a student to a group within a selected class (turma).
  *
  * @param escola Pointer to the ESCOLA structure representing the school, which holds disciplines, classes, and students.
@@ -770,15 +766,16 @@ int menu_addAlunoToGrupo(ESCOLA *escola) {
     listAlunosTurma(turma);
     printf("Digite o nome do aluno:\n");
     getTextInput(nomeAluno);
+    printf("");
 
-    // Check if the student is already in any group
-    if (menu_checkAlunoInGroup(turma, nomeAluno) == ERR_ALREADY_IN_GROUP) {
+    if (checkAlunoInGroup(turma, nomeAluno) == ERR_ALREADY_IN_GROUP) {
         return ERR_ALREADY_IN_GROUP;
     }
 
     listGrupos(turma);
     printf("Digite o nome do grupo:\n");
-    getTextInput(nomeGrupo);
+    fgets(nomeGrupo, sizeof(nomeGrupo), stdin);
+    nomeGrupo[strcspn(nomeGrupo, "\r\n")] = 0;
 
     addAlunoToGrupo(turma, nomeAluno, nomeGrupo);
 
