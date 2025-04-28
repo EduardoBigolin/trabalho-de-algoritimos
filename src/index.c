@@ -62,7 +62,7 @@ typedef struct Escola {
     DISCIPLINAS *endDisciplina;
 } ESCOLA;
 
-void printDisciplinas(ESCOLA *escola) {
+void listAll(ESCOLA *escola) {
     if (escola->startDisciplina == NULL) {
         printf("Nenhuma disciplina cadastrada.\n");
         return;
