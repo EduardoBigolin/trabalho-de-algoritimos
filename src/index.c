@@ -53,6 +53,10 @@ typedef struct Disciplina {
 typedef struct Escola {
     char nome[N];
     int numeroDeDisciplina;
+    int numeroAlunosTotal;
+
+    ALUNOS *startAlunos;
+    ALUNOS *endAlunos;
 
     DISCIPLINAS *startDisciplina;
     DISCIPLINAS *endDisciplina;
