@@ -6,7 +6,8 @@
 #define CN 10
 
 #define OK 0
-#define ERROR -1
+#define ERROR (-1)
+#define ERR_ALREADY_IN_GROUP 4
 
 typedef struct Alunos {
     char nome[N];
@@ -222,6 +223,30 @@ void listAlunos(ESCOLA *escola) {
     }
 
     ALUNOS *currAluno = escola->startAlunos;
+    int countDisc = 1;
+
+    printf("\n=========================================\n");
+    while (currAluno != NULL) {
+        printf("%d. %s\n", countDisc++, currAluno->nome);
+        currAluno = currAluno->next;
+    }
+    printf("\n=========================================\n");
+}
+
+/**
+ * @brief Lists all students (ALUNOS) in a given TURMA (class).
+ *
+ * @param turma Pointer to the TURMA structure that contains the list of students.
+ *              Must be non-NULL. If no students are registered in the turma,
+ *              a message will be printed indicating that no students exist.
+ */
+void listAlunosTurma(TURMA *turma) {
+    if (turma->startAlunos == NULL) {
+        printf("Nenhum aluno cadastrado.\n");
+        return;
+    }
+
+    ALUNOS *currAluno = turma->startAlunos;
     int countDisc = 1;
 
     printf("\n=========================================\n");
@@ -454,7 +479,6 @@ int addAlunoTurma(ESCOLA *escola, TURMA *turma, char *nome) {
     return OK;
 }
 
-void addGrupoTurma(TURMA *turma, char *nome) {
 /**
  * @brief Adds a new group to a specific class.
  *
@@ -462,8 +486,9 @@ void addGrupoTurma(TURMA *turma, char *nome) {
  * @param nome A string containing the name of the group to be added.
  * @return An integer indicating the success or failure of the operation. Returns OK on success or ERROR on failure.
  */
+int addGrupoTurma(TURMA *turma, char *nome) {
     GRUPOS *newGrupo = (GRUPOS *) malloc(sizeof(GRUPOS));
-    if (!newGrupo) return;
+    if (!newGrupo) return ERROR;
 
     strcpy(newGrupo->nome, nome);
     newGrupo->numeroDeAlunos = 0;
@@ -483,6 +508,7 @@ void addGrupoTurma(TURMA *turma, char *nome) {
     }
 
     turma->numeroGrupo++;
+    return OK;
 }
 
 /**
@@ -693,6 +719,73 @@ int menu_addGrupo(ESCOLA *escola) {
 }
 
 /**
+ * @brief Checks if a specified student is already a member of any group within a given class (turma).
+ *
+ * @param turma Pointer to the TURMA structure, representing the class being checked.
+ * @param nomeAluno Pointer to a character array containing the name of the student to be checked.
+ *
+ * @return ERR_ALREADY_IN_GROUP if the student is found in any group,
+ *         OK if the student is not in any group.
+ *
+ * @note This function assumes the structure of TURMA, GRUPOS, and ALUNOS
+ *       is well-defined and that the pointers within the structures are properly initialized.
+ */
+int menu_checkAlunoInGroup(TURMA *turma, char *nomeAluno) {
+    GRUPOS *grupoCheck = turma->startGrupos;
+    while (grupoCheck) {
+        ALUNOS *grupoAluno = grupoCheck->start;
+        while (grupoAluno) {
+            if (strcmp(grupoAluno->nome, nomeAluno) == 0) {
+                printf("Aluno '%s' já está em um grupo.\n", nomeAluno);
+                return ERR_ALREADY_IN_GROUP;
+            }
+            grupoAluno = grupoAluno->next;
+        }
+        grupoCheck = grupoCheck->next;
+    }
+    return OK;
+}
+
+/**
+ * @brief Adds a student to a group within a selected class (turma).
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school, which holds disciplines, classes, and students.
+ *
+ * @return OK if the student is successfully added to the group,
+ *         ERR_ALREADY_IN_GROUP if the student is already part of a group,
+ *         ERROR if an error occurs during the process (e.g., student or class not found).
+ */
+int menu_addAlunoToGrupo(ESCOLA *escola) {
+    int turmaIdx, discIdx;
+    char nomeAluno[N], nomeGrupo[N];
+
+    turmaIdx = menu_selectTurma(escola, "Digite o numero da turma onde o aluno e o grupo estão", &discIdx);
+
+    DISCIPLINAS *disc = getDisciplinaByIndex(escola, discIdx);
+    if (!disc) return ERROR;
+
+    TURMA *turma = getTurmaByIndex(disc, turmaIdx);
+    if (!turma) return ERROR;
+
+    listAlunosTurma(turma);
+    printf("Digite o nome do aluno:\n");
+    getTextInput(nomeAluno);
+
+    // Check if the student is already in any group
+    if (menu_checkAlunoInGroup(turma, nomeAluno) == ERR_ALREADY_IN_GROUP) {
+        return ERR_ALREADY_IN_GROUP;
+    }
+
+    listGrupos(turma);
+    printf("Digite o nome do grupo:\n");
+    getTextInput(nomeGrupo);
+
+    addAlunoToGrupo(turma, nomeAluno, nomeGrupo);
+
+    return OK;
+}
+
+/**
  * @brief Displays the main menu for managing a school, allowing the user to perform various operations such as creating disciplines, groups, and adding students.
  *
  * @param escola Pointer to the ESCOLA structure representing the school, which contains information about disciplines, classes, students, and groups.
@@ -751,6 +844,16 @@ int menu(ESCOLA *escola, char *errorMsg) {
             }
             menu(escola, msg);
             break;
+        case '6':
+            switch(menu_addAlunoToGrupo(escola)) {
+                case ERR_ALREADY_IN_GROUP:
+                    strcpy(msg, "Aluno ja pertence a um grupo");
+                    break;
+                case ERROR:
+                    strcpy(msg, "Aluno nao encontrado");
+                default:
+            }
+        menu(escola, msg);
         case 's':
             printf("Saindo do menu.\n");
             return OK;
