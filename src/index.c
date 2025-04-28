@@ -667,6 +667,32 @@ int menu_addAlunoToTurma(ESCOLA *escola) {
 }
 
 /**
+ * @brief Adds a new group to a specified class (turma) within a discipline in the school.
+ *
+ * @param escola Pointer to the ESCOLA structure, representing the school containing the disciplines and classes.
+ *
+ * @return OK if the group is successfully added,
+ *         ERROR if an error occurs during the addition process (e.g., duplicate group name).
+ */
+int menu_addGrupo(ESCOLA *escola) {
+    int idx, discIdx;
+    char nome[N];
+
+    idx = menu_selectTurma(escola, "Digite o numero da turma que deseja adicionar o grupo", &discIdx);
+
+    TURMA *turma = getTurmaByIndex(getDisciplinaByIndex(escola, discIdx), idx);
+
+    printf("Digite o nome do grupo:\n");
+    getTextInput(nome);
+
+    if (addGrupoTurma(turma, nome) == ERROR) {
+        return ERROR;
+    }
+
+    return OK;
+}
+
+/**
  * @brief Displays the main menu for managing a school, allowing the user to perform various operations such as creating disciplines, groups, and adding students.
  *
  * @param escola Pointer to the ESCOLA structure representing the school, which contains information about disciplines, classes, students, and groups.
@@ -716,6 +742,12 @@ int menu(ESCOLA *escola, char *errorMsg) {
         case '4':
             if (menu_addAlunoToTurma(escola) == ERROR) {
                 strcpy(msg, "Aluno nao encontrado");
+            }
+            menu(escola, msg);
+            break;
+        case '5':
+            if (menu_addGrupo(escola) == ERROR) {
+                strcpy(msg, "Grupo ja existe");
             }
             menu(escola, msg);
             break;
