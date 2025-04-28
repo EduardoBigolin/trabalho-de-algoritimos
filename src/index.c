@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 #define N 80
+#define CN 10
+
 #define OK 0
 #define ERROR -1
 
@@ -26,7 +28,7 @@ typedef struct Grupos {
 } GRUPOS;
 
 typedef struct Turma {
-    int codigo;
+    char codigo[CN];
     int numeroGrupo;
     int numeroAlunosSemGrupo;
     int numeroAlunosTotal;
@@ -127,12 +129,30 @@ void listDisciplinas(ESCOLA *escola) {
         return;
     }
 
-    DISCIPLINAS *atualDisc = escola->startDisciplina;
+    DISCIPLINAS *currDisc = escola->startDisciplina;
     int countDisc = 1;
 
-    while (atualDisc != NULL) {
-        printf("%d. %s\n", countDisc++, atualDisc->nome);
-        atualDisc = atualDisc->next;
+    printf("\n=========================================\n");
+    while (currDisc != NULL) {
+        printf("%d. %s\n", countDisc++, currDisc->nome);
+        currDisc = currDisc->next;
+    }
+    printf("\n=========================================\n");
+}
+
+void listAlunos(ESCOLA *escola) {
+    if (escola->startAlunos == NULL) {
+        printf("Nenhum aluno cadastrado.\n");
+        return;
+    }
+
+    ALUNOS *currAluno = escola->startAlunos;
+    int countDisc = 1;
+
+    printf("\n=========================================\n");
+    while (currAluno != NULL) {
+        printf("%d. %s\n", countDisc++, currAluno->nome);
+        currAluno = currAluno->next;
     }
     printf("\n=========================================\n");
 }
@@ -142,16 +162,16 @@ DISCIPLINAS *getDisciplinaByIndex(ESCOLA *escola, int index) {
         printf("Disciplina não encontrada.\n");
         return NULL;
     }
-    DISCIPLINAS *atualDisc = escola->startDisciplina;
+    DISCIPLINAS *currDisc = escola->startDisciplina;
     int i = 1;
-    while (i != index) {
-        atualDisc = atualDisc->next;
+    while (i != index && currDisc != NULL) {
+        currDisc = currDisc->next;
         i++;
     }
-    return atualDisc;
+    return currDisc;
 }
 
-void addDisciplinaEscola(ESCOLA *escola, char nome[N]) {
+void addDisciplinaEscola(ESCOLA *escola, char *nome) {
     DISCIPLINAS *newDisciplina = (DISCIPLINAS *) malloc(sizeof(DISCIPLINAS));
     if (!newDisciplina) return;
 
@@ -175,11 +195,11 @@ void addDisciplinaEscola(ESCOLA *escola, char nome[N]) {
     escola->numeroDeDisciplina++;
 }
 
-int addTurmaDisciplina(DISCIPLINAS *disciplina, int codigo) {
+int addTurmaDisciplina(DISCIPLINAS *disciplina, char *codigo) {
     TURMA *newTurma = (TURMA *) malloc(sizeof(TURMA));
     if (!newTurma) return ERROR;
 
-    newTurma->codigo = codigo;
+    strcpy(newTurma->codigo, codigo);
     newTurma->numeroAlunosTotal = 0;
     newTurma->numeroAlunosSemGrupo = 0;
     newTurma->numeroGrupo = 0;
@@ -206,7 +226,37 @@ int addTurmaDisciplina(DISCIPLINAS *disciplina, int codigo) {
     return OK;
 }
 
-int addAlunoEscola(ESCOLA *escola, char nome[N], int idade) {
+void listTurmas(DISCIPLINAS *disc) {
+    if (disc == NULL || disc->startTurma == NULL) {
+        printf("Nenhuma turma cadastrada.\n");
+        return;
+    }
+
+    TURMA *currTurma = disc->startTurma;
+    int countDisc = 1;
+
+    while (currTurma != NULL) {
+        printf("%d. %s\n", countDisc++, currTurma->codigo);
+        currTurma = currTurma->next;
+    }
+    printf("\n=========================================\n");
+}
+
+TURMA *getTurmaByIndex(DISCIPLINAS *disc, int index) {
+    if (disc->startTurma == NULL) {
+        printf("Turma não encontrada.\n");
+        return NULL;
+    }
+    TURMA *currTurma = disc->startTurma;
+    int i = 1;
+    while (i != index) {
+        currTurma = currTurma->next;
+        i++;
+    }
+    return currTurma;
+}
+
+int addAlunoEscola(ESCOLA *escola, char *nome, int idade) {
     ALUNOS *newAluno = (ALUNOS *) malloc(sizeof(ALUNOS));
     if (!newAluno) return ERROR;
 
@@ -229,20 +279,22 @@ int addAlunoEscola(ESCOLA *escola, char nome[N], int idade) {
     return OK;
 }
 
-ALUNOS *getAlunoEscola(ESCOLA *escola, char nomeAluno[N]) {
+ALUNOS *getAlunoEscola(ESCOLA *escola, char *nomeAluno) {
     ALUNOS *aluno = escola->startAlunos;
-    while (aluno && strcmp(aluno->nome, nomeAluno) != 0)
+    while (aluno != NULL && strcmp(aluno->nome, nomeAluno) != 0) {
         aluno = aluno->next;
+    }
 
     if (!aluno) {
-        printf("Aluno '%s' não encontrado na escola.\n", nomeAluno);
-        return;
+        printf("Aluno %s nao encontrado na escola.\n", nomeAluno);
+        return NULL;
     }
     return aluno;
 }
 
-void addAlunoTurma(ESCOLA *escola, TURMA *turma, char nome[N]) {
+int addAlunoTurma(ESCOLA *escola, TURMA *turma, char *nome) {
     ALUNOS *alunoCopy = (ALUNOS *) malloc(sizeof(ALUNOS)), *aluno = getAlunoEscola(escola, nome);
+    if (!aluno) return ERROR;
 
     strcpy(alunoCopy->nome, aluno->nome);
     alunoCopy->idade = aluno->idade;
@@ -261,9 +313,10 @@ void addAlunoTurma(ESCOLA *escola, TURMA *turma, char nome[N]) {
 
     turma->numeroAlunosTotal++;
     turma->numeroAlunosSemGrupo++;
+    return OK;
 }
 
-void addGrupoTurma(TURMA *turma, char nome[N]) {
+void addGrupoTurma(TURMA *turma, char *nome) {
     GRUPOS *newGrupo = (GRUPOS *) malloc(sizeof(GRUPOS));
     if (!newGrupo) return;
 
@@ -287,7 +340,7 @@ void addGrupoTurma(TURMA *turma, char nome[N]) {
     turma->numeroGrupo++;
 }
 
-void moverAlunoParaGrupo(TURMA *turma, char nomeAluno[N], char nomeGrupo[N]) {
+void addAlunoToGrupo(TURMA *turma, char *nomeAluno, char *nomeGrupo) {
     ALUNOS *aluno = turma->startAlunos;
     while (aluno && strcmp(aluno->nome, nomeAluno) != 0)
         aluno = aluno->next;
@@ -331,6 +384,30 @@ void moverAlunoParaGrupo(TURMA *turma, char nomeAluno[N], char nomeGrupo[N]) {
     grupo->numeroDeAlunos++;
 }
 
+int menu_selectDisciplina(ESCOLA *escola, char *msg) {
+    int idx;
+
+    listDisciplinas(escola);
+
+    printf("%s: \n", msg);
+    scanf("%d", &idx);
+
+    return idx;
+}
+
+int menu_selectTurma(ESCOLA *escola, char *msg, int *discIdx) {
+    int idx;
+
+    *discIdx = menu_selectDisciplina(escola, "Digite o numero da disciplina que a turma pertence");
+
+    listTurmas(getDisciplinaByIndex(escola, *discIdx));
+
+    printf("%s \n", msg);
+    scanf("%d", &idx);
+
+    return idx;
+}
+
 void menu_addDisciplina(ESCOLA *escola) {
     printf("Digite o nome da Disciplina: \n");
     getchar();
@@ -340,17 +417,16 @@ void menu_addDisciplina(ESCOLA *escola) {
 }
 
 int menu_addTurma(ESCOLA *escola) {
-    int numeroTurma, idx;
+    int idx;
+    char codTurma[CN];
 
-    listDisciplinas(escola);
+    idx = menu_selectDisciplina(escola, "Digite o numero da disciplina que deseja adicionar a turma");
 
     printf("Digite o número da Disciplina que deseja adicionar a turma: \n");
     scanf("%d", &idx);
+    getTextInput(codTurma);
 
-    printf("Digite o número da Turma (Ex: 101, 204): \n");
-    scanf("%d", &numeroTurma);
-
-    return addTurmaDisciplina(getDisciplinaByIndex(escola, idx), numeroTurma);
+    return addTurmaDisciplina(getDisciplinaByIndex(escola, idx), codTurma);
 }
 
 int menu_addAluno(ESCOLA *escola) {
@@ -358,8 +434,7 @@ int menu_addAluno(ESCOLA *escola) {
     int idade;
 
     printf("Digite o nome do aluno:\n");
-    getchar();
-    fgets(nome, sizeof(nome), stdin);
+    getTextInput(nome);
 
     printf("Digite a idade do aluno:\n");
     scanf("%d", &idade);
@@ -367,13 +442,34 @@ int menu_addAluno(ESCOLA *escola) {
     return addAlunoEscola(escola, nome, idade);
 }
 
-int menu(ESCOLA *escola, char errorMsg[N]) {
-    char msg = "";
+int menu_addAlunoToTurma(ESCOLA *escola) {
+    int idx, discIdx;
+    char nome[N];
+
+    idx = menu_selectTurma(escola, "Digite o numero da turma que deseja adicionar o aluno", &discIdx);
+
+    TURMA *turma = getTurmaByIndex(getDisciplinaByIndex(escola, discIdx), idx);
+
+    listAlunos(escola);
+    printf("Digite o nome do aluno:\n");
+    getTextInput(nome);
+
+    printf("%s\n", nome);
+
+    if (addAlunoTurma(escola, turma, nome) == ERROR) {
+        return ERROR;
+    }
+
+    return OK;
+}
+
+int menu(ESCOLA *escola, char *errorMsg) {
+    char msg[N] = "";
 
     listAll(escola);
 
-    if (strcmp(errorMsg, "") == 0) {
-        printf("Erro ao executar a operacao: %s", errorMsg);
+    if (strcmp(errorMsg, "") != 0) {
+        printf("Erro ao executar a operacao: %s\n", errorMsg);
     }
 
     printf("Menu:\n");
@@ -383,9 +479,8 @@ int menu(ESCOLA *escola, char errorMsg[N]) {
     printf("4. Adicionar Aluno em Turma\n");
     printf("5. Criar Grupo em Turma\n");
     printf("6. Adicionar Aluno em Grupo\n");
-    printf("10. Exit\n");
-    printf("Digite o número correspontente com a operação desejada (1, 2, 3, 4...) ou \"s\" para sair: \n");
-    const int choice = getchar();
+    printf("Digite o numero correspontente com a operacao desejada (1, 2, 3, 4...) ou \"s\" para sair: \n");
+    int choice = getchar();
     fflush(stdin);
     printf("\n");
 
@@ -396,20 +491,25 @@ int menu(ESCOLA *escola, char errorMsg[N]) {
             break;
         case '2':
             if (menu_addTurma(escola) == ERROR) {
-                strcpy(&msg, "Turma ja existe");
+                strcpy(msg, "Turma ja existe");
             }
-            menu(escola, &msg);
+            menu(escola, msg);
             break;
         case '3':
             if (menu_addAluno(escola) == ERROR) {
-                strcpy(&msg, "Aluno ja existe");
+                strcpy(msg, "Aluno ja existe");
             }
-            menu(escola, &msg);
+            menu(escola, msg);
+            break;
+        case '4':
+            if (menu_addAlunoToTurma(escola) == ERROR) {
+                strcpy(msg, "Aluno nao encontrado");
+            }
+            menu(escola, msg);
             break;
         case 's':
             printf("Saindo do menu.\n");
             return OK;
-            break;
         default:
             menu(escola, "Operacao invalida");
     }
