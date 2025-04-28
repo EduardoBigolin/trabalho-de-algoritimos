@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 #define N 80
+#define OK 0
+#define ERROR -1
 
 typedef struct Alunos {
     char nome[N];
@@ -108,14 +110,45 @@ void listAll(ESCOLA *escola) {
                         atualGrupo = atualGrupo->next;
                     }
                 }
+                printf("\n");
 
                 atualTurma = atualTurma->next;
             }
         }
 
-        printf("========================================\n");
+        printf("\n========================================\n");
         atualDisc = atualDisc->next;
     }
+}
+
+void listDisciplinas(ESCOLA *escola) {
+    if (escola->startDisciplina == NULL) {
+        printf("Nenhuma disciplina cadastrada.\n");
+        return;
+    }
+
+    DISCIPLINAS *atualDisc = escola->startDisciplina;
+    int countDisc = 1;
+
+    while (atualDisc != NULL) {
+        printf("%d. %s\n", countDisc++, atualDisc->nome);
+        atualDisc = atualDisc->next;
+    }
+    printf("\n=========================================\n");
+}
+
+DISCIPLINAS *getDisciplinaByIndex(ESCOLA *escola, int index) {
+    if (escola->startDisciplina == NULL) {
+        printf("Disciplina não encontrada.\n");
+        return NULL;
+    }
+    DISCIPLINAS *atualDisc = escola->startDisciplina;
+    int i = 1;
+    while (i != index) {
+        atualDisc = atualDisc->next;
+        i++;
+    }
+    return atualDisc;
 }
 
 void addDisciplinaEscola(ESCOLA *escola, char nome[N]) {
@@ -142,9 +175,9 @@ void addDisciplinaEscola(ESCOLA *escola, char nome[N]) {
     escola->numeroDeDisciplina++;
 }
 
-void addTurmaDisciplina(DISCIPLINAS *disciplina, int codigo) {
+int addTurmaDisciplina(DISCIPLINAS *disciplina, int codigo) {
     TURMA *newTurma = (TURMA *) malloc(sizeof(TURMA));
-    if (!newTurma) return;
+    if (!newTurma) return ERROR;
 
     newTurma->codigo = codigo;
     newTurma->numeroAlunosTotal = 0;
@@ -170,11 +203,12 @@ void addTurmaDisciplina(DISCIPLINAS *disciplina, int codigo) {
     }
 
     disciplina->numeroDeTurma++;
+    return OK;
 }
 
-void addAlunoEscola(ESCOLA *escola, char nome[N], int idade) {
+int addAlunoEscola(ESCOLA *escola, char nome[N], int idade) {
     ALUNOS *newAluno = (ALUNOS *) malloc(sizeof(ALUNOS));
-    if (!newAluno) return;
+    if (!newAluno) return ERROR;
 
     strcpy(newAluno->nome, nome);
     newAluno->idade = idade;
@@ -192,6 +226,7 @@ void addAlunoEscola(ESCOLA *escola, char nome[N], int idade) {
     }
 
     escola->numeroAlunosTotal++;
+    return OK;
 }
 
 ALUNOS *getAlunoEscola(ESCOLA *escola, char nomeAluno[N]) {
@@ -206,19 +241,22 @@ ALUNOS *getAlunoEscola(ESCOLA *escola, char nomeAluno[N]) {
     return aluno;
 }
 
-    strcpy(newAluno->nome, nome);
-    newAluno->idade = idade;
-    newAluno->next = NULL;
-    newAluno->prev = NULL;
+void addAlunoTurma(ESCOLA *escola, TURMA *turma, char nome[N]) {
+    ALUNOS *alunoCopy = (ALUNOS *) malloc(sizeof(ALUNOS)), *aluno = getAlunoEscola(escola, nome);
+
+    strcpy(alunoCopy->nome, aluno->nome);
+    alunoCopy->idade = aluno->idade;
+    alunoCopy->next = NULL;
+    alunoCopy->prev = NULL;
 
     if (turma->endAlunos == NULL) {
-        turma->startAlunos = newAluno;
-        turma->endAlunos = newAluno;
+        turma->startAlunos = alunoCopy;
+        turma->endAlunos = alunoCopy;
     } else {
         ALUNOS *aux = turma->endAlunos;
-        aux->next = newAluno;
-        newAluno->prev = aux;
-        turma->endAlunos = newAluno;
+        aux->next = alunoCopy;
+        alunoCopy->prev = aux;
+        turma->endAlunos = alunoCopy;
     }
 
     turma->numeroAlunosTotal++;
@@ -293,6 +331,90 @@ void moverAlunoParaGrupo(TURMA *turma, char nomeAluno[N], char nomeGrupo[N]) {
     grupo->numeroDeAlunos++;
 }
 
+void menu_addDisciplina(ESCOLA *escola) {
+    printf("Digite o nome da Disciplina: \n");
+    getchar();
+    char nomeDisciplina[N];
+    fgets(nomeDisciplina, sizeof(nomeDisciplina), stdin);
+    addDisciplinaEscola(escola, nomeDisciplina);
+}
+
+int menu_addTurma(ESCOLA *escola) {
+    int numeroTurma, idx;
+
+    listDisciplinas(escola);
+
+    printf("Digite o número da Disciplina que deseja adicionar a turma: \n");
+    scanf("%d", &idx);
+
+    printf("Digite o número da Turma (Ex: 101, 204): \n");
+    scanf("%d", &numeroTurma);
+
+    return addTurmaDisciplina(getDisciplinaByIndex(escola, idx), numeroTurma);
+}
+
+int menu_addAluno(ESCOLA *escola) {
+    char nome[N];
+    int idade;
+
+    printf("Digite o nome do aluno:\n");
+    getchar();
+    fgets(nome, sizeof(nome), stdin);
+
+    printf("Digite a idade do aluno:\n");
+    scanf("%d", &idade);
+
+    return addAlunoEscola(escola, nome, idade);
+}
+
+int menu(ESCOLA *escola, char errorMsg[N]) {
+    char msg = "";
+
+    listAll(escola);
+
+    if (strcmp(errorMsg, "") == 0) {
+        printf("Erro ao executar a operacao: %s", errorMsg);
+    }
+
+    printf("Menu:\n");
+    printf("1. Criar Disciplina\n");
+    printf("2. Criar Turma\n");
+    printf("3. Criar Aluno\n");
+    printf("4. Adicionar Aluno em Turma\n");
+    printf("5. Criar Grupo em Turma\n");
+    printf("6. Adicionar Aluno em Grupo\n");
+    printf("10. Exit\n");
+    printf("Digite o número correspontente com a operação desejada (1, 2, 3, 4...) ou \"s\" para sair: \n");
+    const int choice = getchar();
+    fflush(stdin);
+    printf("\n");
+
+    switch (choice) {
+        case '1':
+            menu_addDisciplina(escola);
+            menu(escola, "");
+            break;
+        case '2':
+            if (menu_addTurma(escola) == ERROR) {
+                strcpy(&msg, "Turma ja existe");
+            }
+            menu(escola, &msg);
+            break;
+        case '3':
+            if (menu_addAluno(escola) == ERROR) {
+                strcpy(&msg, "Aluno ja existe");
+            }
+            menu(escola, &msg);
+            break;
+        case 's':
+            printf("Saindo do menu.\n");
+            return OK;
+            break;
+        default:
+            menu(escola, "Operacao invalida");
+    }
+}
+
 int main() {
     ESCOLA escola = {.numeroDeDisciplina = 0, .startDisciplina = NULL, .endDisciplina = NULL};
     strcpy(escola.nome, "Universidade de Caxias do Sul");
@@ -320,7 +442,5 @@ int main() {
     createListOfTurmas(escola.andDisciplina, 106);
     createListOfTurmas(escola.andDisciplina, 107);
 
-    printDisciplinas(&escola);
-
-    return 0;
+    return menu(&escola, "");
 }
