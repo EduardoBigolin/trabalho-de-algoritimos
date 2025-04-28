@@ -66,6 +66,59 @@ typedef struct Escola {
     DISCIPLINAS *endDisciplina;
 } ESCOLA;
 
+void getTextInput(char *text) {
+    char str[N];
+
+    getchar();
+    fgets(str, sizeof(str), stdin);
+    str[strcspn(str, "\r\n")] = 0;
+    strcpy(text, str);
+}
+
+void listGrupo(GRUPOS *grupo) {
+    ALUNOS *aluno;
+
+    printf("         - Grupo: %s (Alunos: %d)\n", grupo->nome, grupo->numeroDeAlunos);
+    aluno = grupo->start;
+    while (aluno != NULL) {
+        printf("             - %s (idade: %d)\n", aluno->nome, aluno->idade);
+        aluno = aluno->next;
+    }
+}
+
+void listGrupos(TURMA *turma) {
+    GRUPOS *currGrupo = turma->startGrupos;
+    printf("      Grupos (total: %d):\n", turma->numeroGrupo);
+    if (currGrupo == NULL) {
+        printf("         Nenhum grupo cadastrado.\n");
+    } else {
+        while (currGrupo != NULL) {
+            listGrupo(currGrupo);
+            currGrupo = currGrupo->next;
+        }
+    }
+    printf("\n");
+}
+
+void listTurma(TURMA *turma) {
+    printf("   -> Turma Codigo: %s\n      Numero total de alunos: %d\n", turma->codigo,
+           turma->numeroAlunosTotal);
+
+    printf("      Alunos sem grupos (total: %d):\n", turma->numeroAlunosSemGrupo);
+
+    ALUNOS *currAluno = turma->startAlunos;
+    if (currAluno == NULL) {
+        printf("         Nenhum aluno sem grupo.\n");
+    } else {
+        while (currAluno != NULL) {
+            printf("         - %s (idade: %d)\n", currAluno->nome, currAluno->idade);
+            currAluno = currAluno->next;
+        }
+    }
+
+    listGrupos(turma);
+}
+
 void listAll(ESCOLA *escola) {
     if (escola->startDisciplina == NULL) {
         printf("Nenhuma disciplina cadastrada.\n");
@@ -76,50 +129,25 @@ void listAll(ESCOLA *escola) {
     printf("Total de disciplinas: %d\n", escola->numeroDeDisciplina);
     printf("========================================\n");
 
-    DISCIPLINAS *atualDisc = escola->startDisciplina;
+    DISCIPLINAS *currDisc = escola->startDisciplina;
     int countDisc = 1;
 
-    while (atualDisc != NULL) {
-        printf("%d. Disciplina: %s\n", countDisc++, atualDisc->nome);
-        printf("   Total de turmas: %d\n", atualDisc->numeroDeTurma);
+    while (currDisc != NULL) {
+        printf("%d. Disciplina: %s\n", countDisc++, currDisc->nome);
+        printf("   Total de turmas: %d\n", currDisc->numeroDeTurma);
 
-        TURMA *atualTurma = atualDisc->startTurma;
-        if (atualTurma == NULL) {
+        TURMA *currTurma = currDisc->startTurma;
+        if (currTurma == NULL) {
             printf("   Nenhuma turma cadastrada.\n");
         } else {
-            while (atualTurma != NULL) {
-                printf("   -> Turma Codigo: %d\n      Numero total de alunos: %d\n", atualTurma->codigo,
-                       atualTurma->numeroAlunosTotal);
-                printf("      Alunos sem grupos(total: %d):\n", atualTurma->numeroAlunosSemGrupo);
-
-                ALUNOS *atualAluno = atualTurma->startAlunos;
-                if (atualAluno == NULL) {
-                    printf("         Nenhum aluno cadastrado.\n");
-                } else {
-                    while (atualAluno != NULL) {
-                        printf("         - %s (idade: %d)\n", atualAluno->nome, atualAluno->idade);
-                        atualAluno = atualAluno->next;
-                    }
-                }
-
-                GRUPOS *atualGrupo = atualTurma->startGrupos;
-                printf("      Grupos (total: %d):\n", atualTurma->numeroGrupo);
-                if (atualGrupo == NULL) {
-                    printf("         Nenhum grupo cadastrado.\n");
-                } else {
-                    while (atualGrupo != NULL) {
-                        printf("         - Grupo: %s (Alunos: %d)\n", atualGrupo->nome, atualGrupo->numeroDeAlunos);
-                        atualGrupo = atualGrupo->next;
-                    }
-                }
-                printf("\n");
-
-                atualTurma = atualTurma->next;
+            while (currTurma != NULL) {
+                listTurma(currTurma);
+                currTurma = currTurma->next;
             }
         }
 
         printf("\n========================================\n");
-        atualDisc = atualDisc->next;
+        currDisc = currDisc->next;
     }
 }
 
@@ -409,10 +437,10 @@ int menu_selectTurma(ESCOLA *escola, char *msg, int *discIdx) {
 }
 
 void menu_addDisciplina(ESCOLA *escola) {
-    printf("Digite o nome da Disciplina: \n");
-    getchar();
     char nomeDisciplina[N];
-    fgets(nomeDisciplina, sizeof(nomeDisciplina), stdin);
+    printf("Digite o nome da disciplina: \n");
+    getchar();
+    getTextInput(nomeDisciplina);
     addDisciplinaEscola(escola, nomeDisciplina);
 }
 
@@ -422,8 +450,7 @@ int menu_addTurma(ESCOLA *escola) {
 
     idx = menu_selectDisciplina(escola, "Digite o numero da disciplina que deseja adicionar a turma");
 
-    printf("Digite o número da Disciplina que deseja adicionar a turma: \n");
-    scanf("%d", &idx);
+    printf("Digite o codigo da turma (Ex: 101, 204): \n");
     getTextInput(codTurma);
 
     return addTurmaDisciplina(getDisciplinaByIndex(escola, idx), codTurma);
