@@ -553,22 +553,22 @@ int main() {
     addAlunoEscola(&escola, "Marcos", 22);
 
     addDisciplinaEscola(&escola, "Matematica");
-    addTurmaDisciplina(escola.endDisciplina, 100);
-    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Eduardo");
-    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Julio");
-    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Marcos");
-    addGrupoTurma(escola.endDisciplina->endTurma, "Grupo 01");
-    addGrupoTurma(escola.endDisciplina->endTurma, "Grupo 02");
-    moverAlunoParaGrupo(escola.endDisciplina->endTurma, "Eduardo", "Grupo 01");
-    moverAlunoParaGrupo(escola.endDisciplina->endTurma, "Julio", "Grupo 01");
-    addTurmaDisciplina(escola.endDisciplina, 101);
+    addTurmaDisciplina(getDisciplinaByIndex(&escola, 1), "FM10001-A");
+    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Eduardo");
+    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Julio");
+    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Marcos");
+    addGrupoTurma(getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Grupo 01");
+    addGrupoTurma(getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Grupo 02");
+    addAlunoToGrupo(getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Eduardo", "Grupo 01");
+    addAlunoToGrupo(getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Julio", "Grupo 01");
+    addTurmaDisciplina(getDisciplinaByIndex(&escola, 1), "FM10001-B");
 
     addDisciplinaEscola(&escola, "Portugues");
-    addTurmaDisciplina(escola.endDisciplina, 102);
-    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Ana");
-    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Julio");
-    addGrupoTurma(escola.endDisciplina->endTurma, "Grupo 01");
-    addTurmaDisciplina(escola.endDisciplina, 103);
+    addTurmaDisciplina(getDisciplinaByIndex(&escola, 2), "FP30002-A");
+    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 2), 1), "Ana");
+    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 2), 1), "Julio");
+    addGrupoTurma(getTurmaByIndex(getDisciplinaByIndex(&escola, 2), 1), "Grupo 01");
+    addTurmaDisciplina(getDisciplinaByIndex(&escola, 2), "FP30007-B");
 
     return menu(&escola, "");
 }
