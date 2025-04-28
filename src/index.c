@@ -8,6 +8,7 @@
 #define OK 0
 #define ERROR (-1)
 #define ERR_ALREADY_IN_GROUP 4
+#define ERR_NOT_IN_GROUP 4
 
 typedef struct Alunos {
     char nome[N];
@@ -589,6 +590,73 @@ void addAlunoToGrupo(TURMA *turma, char *nomeAluno, char *nomeGrupo) {
 }
 
 /**
+ * @brief Removes a student from a given class (turma), including their associated group if necessary.
+ *
+ * This function searches for a student within a specified class. If the student is part of a group,
+ * they are removed from the group. The student's entry in the class roster is also removed, and
+ * corresponding counters for students with and without a group are updated. If the student is not
+ * found, an error code is returned.
+ *
+ * @param turma Pointer to the TURMA structure representing the class from which the student
+ *              should be removed. The structure contains information about students, groups,
+ *              and class details.
+ * @param nomeAluno Pointer to a character array containing the name of the student to be removed.
+ *                  The name must match an entry in the class list or group list for removal.
+ *
+ * @return Returns OK if the student was successfully removed;
+ *         ERROR if the student was not found in the class or any groups.
+ */
+int removeAlunoFromTurma(TURMA *turma, char *nomeAluno) {
+
+    if (checkAlunoInGroup(turma, nomeAluno) == ERR_ALREADY_IN_GROUP) {
+        GRUPOS *grupoCheck = turma->startGrupos;
+        while (grupoCheck != NULL) {
+            ALUNOS *currAluno = grupoCheck->start;
+
+            while (currAluno) {
+                if (strcmp(currAluno->nome, nomeAluno) == 0) {
+
+                    if (currAluno->prev) currAluno->prev->next = currAluno->next;
+                    else grupoCheck->start = currAluno->next;
+
+                    if (currAluno->next) currAluno->next->prev = currAluno->prev;
+                    else grupoCheck->end = currAluno->prev;
+
+                    grupoCheck->numeroDeAlunos--;
+                    free(currAluno);
+                    break;
+                }
+                currAluno = currAluno->next;
+            }
+            grupoCheck = grupoCheck->next;
+        }
+    } else {
+        turma->numeroAlunosSemGrupo--;
+    }
+
+
+    TURMA *turmaCheck = turma;
+    ALUNOS *currAluno = turmaCheck->startAlunos;
+
+    while (currAluno) {
+        if (strcmp(currAluno->nome, nomeAluno) == 0) {
+            if (currAluno->prev) currAluno->prev->next = currAluno->next;
+            else turma->startAlunos = currAluno->next;
+
+            if (currAluno->next) currAluno->next->prev = currAluno->prev;
+            else turma->endAlunos = currAluno->prev;
+
+            free(currAluno);
+            turmaCheck->numeroAlunosTotal--;
+            return OK;
+        }
+        currAluno = currAluno->next;
+    }
+
+    return ERROR;
+}
+
+/**
  * @brief Displays a list of all disciplines in the school and allows the user to select one.
  *
  * @param escola Pointer to the ESCOLA structure representing the school,
@@ -782,6 +850,31 @@ int menu_addAlunoToGrupo(ESCOLA *escola) {
     return OK;
 }
 
+
+/**
+ * @brief Removes a student from a specific class in the school system.
+ *
+ * @param escola Pointer to the ESCOLA structure containing all registered disciplines,
+ *               classes, and students in the school system.
+ *
+ * @return OK on successful removal of the student from the class.
+ *         ERROR in case of an error during the removal process.
+ */
+int menu_removeAlunoFromTurma(ESCOLA *escola) {
+    int idx, discIdx;
+    char nome[N];
+
+    idx = menu_selectTurma(escola, "Digite o numero da turma que deseja remover o aluno", &discIdx);
+
+    TURMA *turma = getTurmaByIndex(getDisciplinaByIndex(escola, discIdx), idx);
+
+    listAlunosTurma(turma);
+    printf("Digite o nome do aluno:\n");
+    getTextInput(nome);
+    
+    return removeAlunoFromTurma(turma, nome);
+}
+
 /**
  * @brief Displays the main menu for managing a school, allowing the user to perform various operations such as creating disciplines, groups, and adding students.
  *
@@ -807,6 +900,7 @@ int menu(ESCOLA *escola, char *errorMsg) {
     printf("4. Adicionar Aluno em Turma\n");
     printf("5. Criar Grupo em Turma\n");
     printf("6. Adicionar Aluno em Grupo\n");
+    printf("7. Remover Aluno de Turma\n");
     printf("Digite o numero correspontente com a operacao desejada (1, 2, 3, 4...) ou \"s\" para sair: \n");
     int choice = getchar();
     fflush(stdin);
@@ -851,6 +945,12 @@ int menu(ESCOLA *escola, char *errorMsg) {
                 default:
             }
         menu(escola, msg);
+        case '7':
+            if (menu_removeAlunoFromTurma(escola) == ERROR) {
+                strcpy(msg, "Aluno nao encontrado");
+            }
+            menu(escola, msg);
+            break;
         case 's':
             printf("Saindo do menu.\n");
             return OK;
