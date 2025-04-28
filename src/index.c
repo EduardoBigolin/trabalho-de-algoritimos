@@ -66,6 +66,13 @@ typedef struct Escola {
     DISCIPLINAS *endDisciplina;
 } ESCOLA;
 
+/**
+ * @brief Reads a line of text input from the user, removing trailing newline or carriage return,
+ *        and stores it in the provided buffer.
+ *
+ * @param text Pointer to the character array where the user's input will be stored.
+ *             It must have sufficient space to store the input text.
+ */
 void getTextInput(char *text) {
     char str[N];
 
@@ -75,6 +82,13 @@ void getTextInput(char *text) {
     strcpy(text, str);
 }
 
+/**
+ * @brief Displays the details of a group, including its name, the total number of students,
+ *        and a list of all students in the group with their respective names and ages.
+ *
+ * @param grupo Pointer to a GRUPOS structure containing the group information to be displayed.
+ *              It must be non-NULL.
+ */
 void listGrupo(GRUPOS *grupo) {
     ALUNOS *aluno;
 
@@ -86,6 +100,12 @@ void listGrupo(GRUPOS *grupo) {
     }
 }
 
+/**
+ * @brief Lists all groups within a class (turma), displaying their details including the total
+ *        number of groups. If there are no groups, an appropriate message is displayed.
+ *
+ * @param turma Pointer to a TURMA structure representing the class whose groups are to be listed.
+ *              It must be non-NULL*/
 void listGrupos(TURMA *turma) {
     GRUPOS *currGrupo = turma->startGrupos;
     printf("      Grupos (total: %d):\n", turma->numeroGrupo);
@@ -100,6 +120,13 @@ void listGrupos(TURMA *turma) {
     printf("\n");
 }
 
+/**
+ * @brief Lists details of a specific class (turma), including the total number of students,
+ *        students without a group, and groups within the class.
+ *
+ * @param turma Pointer to a TURMA structure representing the class whose details are to be listed.
+ *              It must be non-NULL.
+ */
 void listTurma(TURMA *turma) {
     printf("   -> Turma Codigo: %s\n      Numero total de alunos: %d\n", turma->codigo,
            turma->numeroAlunosTotal);
@@ -119,6 +146,12 @@ void listTurma(TURMA *turma) {
     listGrupos(turma);
 }
 
+/**
+ * @brief Lists all disciplines and their associated classes (turmas) in the given school (escola).
+ *
+ * @param escola Pointer to an ESCOLA structure containing the list of disciplines. It must be non-NULL.
+ *               If no disciplines are registered, a message will be displayed indicating that no disciplines are available.
+ */
 void listAll(ESCOLA *escola) {
     if (escola->startDisciplina == NULL) {
         printf("Nenhuma disciplina cadastrada.\n");
@@ -151,6 +184,13 @@ void listAll(ESCOLA *escola) {
     }
 }
 
+/**
+ * @brief Lists all disciplines (DISCIPLINAS) registered in the ESCOLA.
+ *
+ * @param escola Pointer to the ESCOLA structure that contains the list of disciplines.
+ *               Must be non-NULL. If no disciplines are registered, a message will
+ *               be displayed indicating that no disciplines are available.
+ */
 void listDisciplinas(ESCOLA *escola) {
     if (escola->startDisciplina == NULL) {
         printf("Nenhuma disciplina cadastrada.\n");
@@ -168,6 +208,13 @@ void listDisciplinas(ESCOLA *escola) {
     printf("\n=========================================\n");
 }
 
+/**
+ * @brief Lists all students (ALUNOS) registered in the ESCOLA (school).
+ *
+ * @param escola Pointer to the ESCOLA structure that contains the list of students.
+ *               Must be non-NULL. If no students are registered, a message will
+ *               be displayed indicating that no students are available.
+ */
 void listAlunos(ESCOLA *escola) {
     if (escola->startAlunos == NULL) {
         printf("Nenhum aluno cadastrado.\n");
@@ -185,6 +232,15 @@ void listAlunos(ESCOLA *escola) {
     printf("\n=========================================\n");
 }
 
+/**
+ * @brief Retrieves a DISCIPLINA (discipline) from the specified ESCOLA (school) by its index.
+ *
+ * @param escola Pointer to the ESCOLA structure that contains the list of disciplinas.
+ *               Must be non-NULL.
+ * @param index The index of the desired disciplina in the list. Indexing starts at 1.
+ * @return Pointer to the DISCIPLINAS structure corresponding to the given index,
+ *         or NULL if the index is out of bounds or if no disciplinas exist in the escola.
+ */
 DISCIPLINAS *getDisciplinaByIndex(ESCOLA *escola, int index) {
     if (escola->startDisciplina == NULL) {
         printf("Disciplina não encontrada.\n");
@@ -199,6 +255,14 @@ DISCIPLINAS *getDisciplinaByIndex(ESCOLA *escola, int index) {
     return currDisc;
 }
 
+/**
+ * @brief Adds a new DISCIPLINA (discipline) to a specified ESCOLA (school).
+ *
+ * @param escola Pointer to the ESCOLA structure where the new disciplina
+ *               will be added. Must be non-NULL.
+ * @param nome Name of the new disciplina to be added. Must be a valid string
+ *             that fits within the DISCIPLINAS::nome field.
+ */
 void addDisciplinaEscola(ESCOLA *escola, char *nome) {
     DISCIPLINAS *newDisciplina = (DISCIPLINAS *) malloc(sizeof(DISCIPLINAS));
     if (!newDisciplina) return;
@@ -223,6 +287,16 @@ void addDisciplinaEscola(ESCOLA *escola, char *nome) {
     escola->numeroDeDisciplina++;
 }
 
+/**
+ * @brief Adds a new TURMA (class) to a specified DISCIPLINAS (discipline).
+ *
+ * @param disciplina Pointer to the DISCIPLINAS structure where the turma will be added.
+ *                   Must be non-NULL.
+ * @param codigo Code of the new turma to be added. Must be a valid string that fits
+ *               within the TURMA::codigo field.
+ *
+ * @return OK on success, or ERROR if memory allocation for the new turma fails.
+ */
 int addTurmaDisciplina(DISCIPLINAS *disciplina, char *codigo) {
     TURMA *newTurma = (TURMA *) malloc(sizeof(TURMA));
     if (!newTurma) return ERROR;
@@ -254,6 +328,12 @@ int addTurmaDisciplina(DISCIPLINAS *disciplina, char *codigo) {
     return OK;
 }
 
+/**
+ * @brief Lists all available TURMA structures within a given DISCIPLINAS structure.
+ *
+ * @param disc Pointer to the DISCIPLINAS structure containing the list of turmas to be listed.
+ *             If NULL or if the startTurma property is NULL, no turmas are listed.
+ */
 void listTurmas(DISCIPLINAS *disc) {
     if (disc == NULL || disc->startTurma == NULL) {
         printf("Nenhuma turma cadastrada.\n");
@@ -270,6 +350,13 @@ void listTurmas(DISCIPLINAS *disc) {
     printf("\n=========================================\n");
 }
 
+/**
+ * @brief Retrieves a TURMA structure by its index from a given DISCIPLINAS structure.
+ *
+ * @param disc Pointer to the DISCIPLINAS structure representing the discipline from which the turma is to be retrieved.
+ * @param index An integer representing the position of the turma in the list, starting from 1.
+ * @return A pointer to the TURMA structure if found, or NULL if the turma does not exist.
+ */
 TURMA *getTurmaByIndex(DISCIPLINAS *disc, int index) {
     if (disc->startTurma == NULL) {
         printf("Turma não encontrada.\n");
@@ -284,6 +371,14 @@ TURMA *getTurmaByIndex(DISCIPLINAS *disc, int index) {
     return currTurma;
 }
 
+/**
+ * @brief Adds a new student to the school's list of students.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school where the student will be added.
+ * @param nome A string containing the name of the student to be added.
+ * @param idade An integer representing the age of the student to be added.
+ * @return An integer value indicating success (OK) or failure (ERROR) of the operation.
+ */
 int addAlunoEscola(ESCOLA *escola, char *nome, int idade) {
     ALUNOS *newAluno = (ALUNOS *) malloc(sizeof(ALUNOS));
     if (!newAluno) return ERROR;
@@ -307,6 +402,13 @@ int addAlunoEscola(ESCOLA *escola, char *nome, int idade) {
     return OK;
 }
 
+/**
+ * @brief Searches for a student in the school by their name.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school where the student is being searched.
+ * @param nomeAluno A string containing the name of the student to search for.
+ * @return A pointer to the ALUNOS structure representing the student if found, or NULL if the student does not exist in the school.
+ */
 ALUNOS *getAlunoEscola(ESCOLA *escola, char *nomeAluno) {
     ALUNOS *aluno = escola->startAlunos;
     while (aluno != NULL && strcmp(aluno->nome, nomeAluno) != 0) {
@@ -320,6 +422,14 @@ ALUNOS *getAlunoEscola(ESCOLA *escola, char *nomeAluno) {
     return aluno;
 }
 
+/**
+ * @brief Adds a student to a specific class.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school where the student and class are registered.
+ * @param turma Pointer to the TURMA structure representing the class to which the student will be added.
+ * @param nome A string containing the name of the student to be added to the class.
+ * @return An integer indicating the success or failure of the operation. Returns OK on success or ERROR if the student does not exist or memory allocation fails.
+ */
 int addAlunoTurma(ESCOLA *escola, TURMA *turma, char *nome) {
     ALUNOS *alunoCopy = (ALUNOS *) malloc(sizeof(ALUNOS)), *aluno = getAlunoEscola(escola, nome);
     if (!aluno) return ERROR;
@@ -345,6 +455,13 @@ int addAlunoTurma(ESCOLA *escola, TURMA *turma, char *nome) {
 }
 
 void addGrupoTurma(TURMA *turma, char *nome) {
+/**
+ * @brief Adds a new group to a specific class.
+ *
+ * @param turma Pointer to the TURMA structure representing the class to which the group will be added.
+ * @param nome A string containing the name of the group to be added.
+ * @return An integer indicating the success or failure of the operation. Returns OK on success or ERROR on failure.
+ */
     GRUPOS *newGrupo = (GRUPOS *) malloc(sizeof(GRUPOS));
     if (!newGrupo) return;
 
@@ -368,6 +485,13 @@ void addGrupoTurma(TURMA *turma, char *nome) {
     turma->numeroGrupo++;
 }
 
+/**
+ * @brief Adds a student to a specific group within a class.
+ *
+ * @param turma Pointer to the TURMA structure representing the class where the operation will occur.
+ * @param nomeAluno A string containing the name of the student to be added to the group.
+ * @param nomeGrupo A string containing the name of the group to which the student will be added.
+ */
 void addAlunoToGrupo(TURMA *turma, char *nomeAluno, char *nomeGrupo) {
     ALUNOS *aluno = turma->startAlunos;
     while (aluno && strcmp(aluno->nome, nomeAluno) != 0)
@@ -412,6 +536,15 @@ void addAlunoToGrupo(TURMA *turma, char *nomeAluno, char *nomeGrupo) {
     grupo->numeroDeAlunos++;
 }
 
+/**
+ * @brief Displays a list of all disciplines in the school and allows the user to select one.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school,
+ *               which contains disciplines to be listed.
+ * @param msg A message to display when prompting the user to select a discipline.
+ *
+ * @return The index of the selected discipline.
+ */
 int menu_selectDisciplina(ESCOLA *escola, char *msg) {
     int idx;
 
@@ -423,6 +556,17 @@ int menu_selectDisciplina(ESCOLA *escola, char *msg) {
     return idx;
 }
 
+/**
+ * @brief Selects a specific "turma" (class) from the school.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school,
+ *               which contains disciplines and "turmas".
+ * @param msg A message to display when prompting the user to select a "turma".
+ * @param discIdx Pointer to an integer where the selected discipline index
+ *                will be stored.
+ *
+ * @return The index of the selected "turma".
+ */
 int menu_selectTurma(ESCOLA *escola, char *msg, int *discIdx) {
     int idx;
 
@@ -436,6 +580,12 @@ int menu_selectTurma(ESCOLA *escola, char *msg, int *discIdx) {
     return idx;
 }
 
+/**
+ * @brief Adds a new discipline to the school.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school,
+ *               which contains the current disciplines and related data.
+ */
 void menu_addDisciplina(ESCOLA *escola) {
     char nomeDisciplina[N];
     printf("Digite o nome da disciplina: \n");
@@ -444,6 +594,15 @@ void menu_addDisciplina(ESCOLA *escola) {
     addDisciplinaEscola(escola, nomeDisciplina);
 }
 
+/**
+ * @brief Adds a new class (turma) to a specific discipline in the school.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school,
+ *               which contains the disciplines, classes, and students.
+ *
+ * @return OK if the class is successfully added,
+ *         ERROR if an error occurs during the addition process.
+ */
 int menu_addTurma(ESCOLA *escola) {
     int idx;
     char codTurma[CN];
@@ -456,6 +615,15 @@ int menu_addTurma(ESCOLA *escola) {
     return addTurmaDisciplina(getDisciplinaByIndex(escola, idx), codTurma);
 }
 
+/**
+ * @brief Adds a new student to the school.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school,
+ *               which contains disciplines, classes, and students.
+ *
+ * @return OK if the student is successfully added,
+ *         ERROR if an error occurs during the addition process.
+ */
 int menu_addAluno(ESCOLA *escola) {
     char nome[N];
     int idade;
@@ -469,6 +637,14 @@ int menu_addAluno(ESCOLA *escola) {
     return addAlunoEscola(escola, nome, idade);
 }
 
+/**
+ * @brief Adds a student to an existing class (turma) within a discipline.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school, which contains disciplines, classes, and students.
+ *
+ * @return OK if the student is successfully added to the class,
+ *         ERROR if an error occurs during the addition process (e.g., student not found).
+ */
 int menu_addAlunoToTurma(ESCOLA *escola) {
     int idx, discIdx;
     char nome[N];
@@ -490,6 +666,15 @@ int menu_addAlunoToTurma(ESCOLA *escola) {
     return OK;
 }
 
+/**
+ * @brief Displays the main menu for managing a school, allowing the user to perform various operations such as creating disciplines, groups, and adding students.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school, which contains information about disciplines, classes, students, and groups.
+ * @param errorMsg Pointer to a string containing an error message to be displayed if an error occurred in a previous operation.
+ *
+ * @return OK if the menu executes successfully and the user exits,
+ *         ERROR if any unhandled error occurs during the menu execution.
+ */
 int menu(ESCOLA *escola, char *errorMsg) {
     char msg[N] = "";
 
