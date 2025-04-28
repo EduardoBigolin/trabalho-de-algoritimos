@@ -727,33 +727,41 @@ int menu(ESCOLA *escola, char *errorMsg) {
     }
 }
 
+/**
+ * @brief Creates test data for the school (escola), including students, disciplines, classes, and groups.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school where test data will be created.
+ */
+void createTestData(ESCOLA *escola) {
+    addAlunoEscola(escola, "Eduardo", 19);
+    addAlunoEscola(escola, "Ana", 20);
+    addAlunoEscola(escola, "Julio", 20);
+    addAlunoEscola(escola, "Marcos", 22);
+
+    addDisciplinaEscola(escola, "Matematica");
+    addTurmaDisciplina(getDisciplinaByIndex(escola, 1), "FM10001-A");
+    addAlunoTurma(escola, getTurmaByIndex(getDisciplinaByIndex(escola, 1), 1), "Eduardo");
+    addAlunoTurma(escola, getTurmaByIndex(getDisciplinaByIndex(escola, 1), 1), "Julio");
+    addAlunoTurma(escola, getTurmaByIndex(getDisciplinaByIndex(escola, 1), 1), "Marcos");
+    addGrupoTurma(getTurmaByIndex(getDisciplinaByIndex(escola, 1), 1), "Grupo 01");
+    addGrupoTurma(getTurmaByIndex(getDisciplinaByIndex(escola, 1), 1), "Grupo 02");
+    addAlunoToGrupo(getTurmaByIndex(getDisciplinaByIndex(escola, 1), 1), "Eduardo", "Grupo 01");
+    addAlunoToGrupo(getTurmaByIndex(getDisciplinaByIndex(escola, 1), 1), "Julio", "Grupo 01");
+    addTurmaDisciplina(getDisciplinaByIndex(escola, 1), "FM10001-B");
+
+    addDisciplinaEscola(escola, "Portugues");
+    addTurmaDisciplina(getDisciplinaByIndex(escola, 2), "FP30002-A");
+    addAlunoTurma(escola, getTurmaByIndex(getDisciplinaByIndex(escola, 2), 1), "Ana");
+    addAlunoTurma(escola, getTurmaByIndex(getDisciplinaByIndex(escola, 2), 1), "Julio");
+    addGrupoTurma(getTurmaByIndex(getDisciplinaByIndex(escola, 2), 1), "Grupo 01");
+    addTurmaDisciplina(getDisciplinaByIndex(escola, 2), "FP30007-B");
+}
+
 int main() {
     ESCOLA escola = {.numeroDeDisciplina = 0, .startDisciplina = NULL, .endDisciplina = NULL};
     strcpy(escola.nome, "Universidade de Caxias do Sul");
 
-    //Cria dados de teste
-    addAlunoEscola(&escola, "Eduardo", 19);
-    addAlunoEscola(&escola, "Ana", 20);
-    addAlunoEscola(&escola, "Julio", 20);
-    addAlunoEscola(&escola, "Marcos", 22);
-
-    addDisciplinaEscola(&escola, "Matematica");
-    addTurmaDisciplina(getDisciplinaByIndex(&escola, 1), "FM10001-A");
-    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Eduardo");
-    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Julio");
-    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Marcos");
-    addGrupoTurma(getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Grupo 01");
-    addGrupoTurma(getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Grupo 02");
-    addAlunoToGrupo(getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Eduardo", "Grupo 01");
-    addAlunoToGrupo(getTurmaByIndex(getDisciplinaByIndex(&escola, 1), 1), "Julio", "Grupo 01");
-    addTurmaDisciplina(getDisciplinaByIndex(&escola, 1), "FM10001-B");
-
-    addDisciplinaEscola(&escola, "Portugues");
-    addTurmaDisciplina(getDisciplinaByIndex(&escola, 2), "FP30002-A");
-    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 2), 1), "Ana");
-    addAlunoTurma(&escola, getTurmaByIndex(getDisciplinaByIndex(&escola, 2), 1), "Julio");
-    addGrupoTurma(getTurmaByIndex(getDisciplinaByIndex(&escola, 2), 1), "Grupo 01");
-    addTurmaDisciplina(getDisciplinaByIndex(&escola, 2), "FP30007-B");
+    createTestData(&escola);
 
     return menu(&escola, "");
 }
