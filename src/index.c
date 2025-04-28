@@ -900,6 +900,15 @@ int menu_removeAlunoFromTurma(ESCOLA *escola) {
  * @return An integer indicating the result of the operation. Returns OK (0)
  *         if the student was successfully removed, or ERROR (-1) if the operation failed.
  */
+int menu_listaAlunoFromTurma(ESCOLA *escola) {
+  int idx, discIdx;
+  idx = menu_selectTurma(escola, "Digite o numero da turma do grupo que deseja Listar os alunos", &discIdx);
+  TURMA *turma = getTurmaByIndex(getDisciplinaByIndex(escola, discIdx), idx);
+
+  listAlunosTurma(turma);
+  return OK;
+}
+
 int menu_removeAlunoFromGrupo(ESCOLA *escola) {
     int idx, discIdx;
     char nome[N];
@@ -942,6 +951,8 @@ int menu(ESCOLA *escola, char *errorMsg) {
     printf("6. Adicionar Aluno em Grupo\n");
     printf("7. Remover Aluno de Turma\n");
     printf("8. Remover Aluno de Grupo\n");
+    printf("9. Listar Aluno de Turma");
+
     printf("Digite o numero correspontente com a operacao desejada (1, 2, 3, 4...) ou \"s\" para sair: \n");
     int choice = getchar();
     fflush(stdin);
@@ -998,6 +1009,12 @@ int menu(ESCOLA *escola, char *errorMsg) {
             }
             menu(escola, msg);
         break;
+        case '9':
+            if(menu_listaAlunoFromTurma(escola) == ERROR){
+              strcpy(msg, "Nao possuiu alunos");
+            }
+            menu(escola, msg);
+            break;
         case 's':
             printf("Saindo do menu.\n");
             return OK;
