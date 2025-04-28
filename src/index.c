@@ -194,9 +194,17 @@ void addAlunoEscola(ESCOLA *escola, char nome[N], int idade) {
     escola->numeroAlunosTotal++;
 }
 
-void addAlunoTurma(TURMA *turma, char nome[N], int idade) {
-    ALUNOS *newAluno = (ALUNOS *) malloc(sizeof(ALUNOS));
-    if (!newAluno) return;
+ALUNOS *getAlunoEscola(ESCOLA *escola, char nomeAluno[N]) {
+    ALUNOS *aluno = escola->startAlunos;
+    while (aluno && strcmp(aluno->nome, nomeAluno) != 0)
+        aluno = aluno->next;
+
+    if (!aluno) {
+        printf("Aluno '%s' não encontrado na escola.\n", nomeAluno);
+        return;
+    }
+    return aluno;
+}
 
     strcpy(newAluno->nome, nome);
     newAluno->idade = idade;
