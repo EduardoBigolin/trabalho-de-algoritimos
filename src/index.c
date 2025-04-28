@@ -419,28 +419,29 @@ int main() {
     ESCOLA escola = {.numeroDeDisciplina = 0, .startDisciplina = NULL, .endDisciplina = NULL};
     strcpy(escola.nome, "Universidade de Caxias do Sul");
 
-    createListOfDisciplinas(&escola, "Matematica");
-    createListOfTurmas(escola.andDisciplina, 100);
-    createListOfAlunosTurma(escola.andDisciplina->andTurma, "Eduardo", 12);
-    createListOfGruposTurma(escola.andDisciplina->andTurma, "Grupo 01");
-    createListOfGruposTurma(escola.andDisciplina->andTurma, "Grupo 02");
-    moverAlunoParaGrupo(escola.andDisciplina->andTurma, "Eduardo", "Grupo 01");
-    createListOfTurmas(escola.andDisciplina, 101);
+    //Cria dados de teste
+    addAlunoEscola(&escola, "Eduardo", 19);
+    addAlunoEscola(&escola, "Ana", 20);
+    addAlunoEscola(&escola, "Julio", 20);
+    addAlunoEscola(&escola, "Marcos", 22);
 
-    createListOfDisciplinas(&escola, "Portugues");
-    createListOfTurmas(escola.andDisciplina, 102);
-    createListOfAlunosTurma(escola.andDisciplina->andTurma, "Ana", 20);
-    createListOfAlunosTurma(escola.andDisciplina->andTurma, "Lucas", 22);
-    createListOfGruposTurma(escola.andDisciplina->andTurma, "Grupo 01");
-    createListOfTurmas(escola.andDisciplina, 103);
+    addDisciplinaEscola(&escola, "Matematica");
+    addTurmaDisciplina(escola.endDisciplina, 100);
+    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Eduardo");
+    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Julio");
+    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Marcos");
+    addGrupoTurma(escola.endDisciplina->endTurma, "Grupo 01");
+    addGrupoTurma(escola.endDisciplina->endTurma, "Grupo 02");
+    moverAlunoParaGrupo(escola.endDisciplina->endTurma, "Eduardo", "Grupo 01");
+    moverAlunoParaGrupo(escola.endDisciplina->endTurma, "Julio", "Grupo 01");
+    addTurmaDisciplina(escola.endDisciplina, 101);
 
-    createListOfDisciplinas(&escola, "Ingles");
-    createListOfTurmas(escola.andDisciplina, 104);
-    createListOfTurmas(escola.andDisciplina, 105);
-
-    createListOfDisciplinas(&escola, "Geografia");
-    createListOfTurmas(escola.andDisciplina, 106);
-    createListOfTurmas(escola.andDisciplina, 107);
+    addDisciplinaEscola(&escola, "Portugues");
+    addTurmaDisciplina(escola.endDisciplina, 102);
+    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Ana");
+    addAlunoTurma(&escola, escola.endDisciplina->endTurma, "Julio");
+    addGrupoTurma(escola.endDisciplina->endTurma, "Grupo 01");
+    addTurmaDisciplina(escola.endDisciplina, 103);
 
     return menu(&escola, "");
 }
