@@ -13,7 +13,7 @@
 typedef struct Alunos {
     char nome[N];
     int idade;
-    int numeroDeTurmas;
+    int numeroTurmas;
 
     struct Alunos *next;
     struct Alunos *prev;
@@ -21,7 +21,7 @@ typedef struct Alunos {
 
 typedef struct Grupos {
     char nome[N];
-    int numeroDeAlunos;
+    int numeroAlunos;
 
     struct Grupos *next;
     struct Grupos *prev;
@@ -51,7 +51,7 @@ typedef struct Disciplina {
     struct Disciplina *prev;
 
     char nome[N];
-    int numeroDeTurma;
+    int numeroTurmas;
 
     TURMA *startTurma;
     TURMA *endTurma;
@@ -59,7 +59,7 @@ typedef struct Disciplina {
 
 typedef struct Escola {
     char nome[N];
-    int numeroDeDisciplina;
+    int numeroDisciplinas;
     int numeroAlunosTotal;
 
     ALUNOS *startAlunos;
@@ -79,7 +79,7 @@ typedef struct Escola {
 void getTextInput(char *text) {
     char str[N];
 
-    getchar();
+    printf("");
     fgets(str, sizeof(str), stdin);
     str[strcspn(str, "\r\n")] = 0;
     strcpy(text, str);
@@ -123,10 +123,21 @@ int checkAlunoInGroup(TURMA *turma, char *nomeAluno) {
 void listGrupo(GRUPOS *grupo) {
     ALUNOS *aluno;
 
-    printf("         - Grupo: %s (Alunos: %d)\n", grupo->nome, grupo->numeroDeAlunos);
+    printf("         - Grupo: %s (Alunos: %d)\n", grupo->nome, grupo->numeroAlunos);
     aluno = grupo->start;
     while (aluno != NULL) {
         printf("             - %s (idade: %d)\n", aluno->nome, aluno->idade);
+        aluno = aluno->next;
+    }
+}
+
+void listGrupoSimple(GRUPOS *grupo) {
+    ALUNOS *aluno;
+
+    printf("    - %s (Alunos: %d)\n", grupo->nome, grupo->numeroAlunos);
+    aluno = grupo->start;
+    while (aluno != NULL) {
+        printf("        - %s\n", aluno->nome);
         aluno = aluno->next;
     }
 }
@@ -145,6 +156,19 @@ void listGrupos(TURMA *turma) {
     } else {
         while (currGrupo != NULL) {
             listGrupo(currGrupo);
+            currGrupo = currGrupo->next;
+        }
+    }
+    printf("\n");
+}
+
+void listGruposSimple(TURMA *turma) {
+    GRUPOS *currGrupo = turma->startGrupos;
+    if (currGrupo == NULL) {
+        printf("         Nenhum grupo cadastrado.\n");
+    } else {
+        while (currGrupo != NULL) {
+            listGrupoSimple(currGrupo);
             currGrupo = currGrupo->next;
         }
     }
@@ -192,7 +216,7 @@ void listAll(ESCOLA *escola) {
     }
 
     printf("Escola: %s\n", escola->nome);
-    printf("Total de disciplinas: %d\n", escola->numeroDeDisciplina);
+    printf("Total de disciplinas: %d\n", escola->numeroDisciplinas);
     printf("========================================\n");
 
     DISCIPLINAS *currDisc = escola->startDisciplina;
@@ -200,7 +224,7 @@ void listAll(ESCOLA *escola) {
 
     while (currDisc != NULL) {
         printf("%d. Disciplina: %s\n", countDisc++, currDisc->nome);
-        printf("   Total de turmas: %d\n", currDisc->numeroDeTurma);
+        printf("   Total de turmas: %d\n", currDisc->numeroTurmas);
 
         TURMA *currTurma = currDisc->startTurma;
         if (currTurma == NULL) {
@@ -278,24 +302,24 @@ void listAlunosExtended(ESCOLA *escola) {
         return;
     }
 
-    printf("Alunos sem turmas:\n");
+    printf("Alunos sem turma:\n");
     ALUNOS *currAluno = escola->startAlunos;
     int countDisc = 1;
     while (currAluno != NULL) {
-        if (currAluno->numeroDeTurmas == 0) {
+        if (currAluno->numeroTurmas == 0) {
             printf("% 5d. %s\n", countDisc++, currAluno->nome);
         }
         currAluno = currAluno->next;
     }
     if (countDisc == 1) {
-        printf("     Nenhum aluno sem turmas.\n");
+        printf("     Nenhum aluno sem turma.\n");
     }
 
     printf("Alunos em apenas uma turma:\n");
     currAluno = escola->startAlunos;
     countDisc = 1;
     while (currAluno != NULL) {
-        if (currAluno->numeroDeTurmas == 1) {
+        if (currAluno->numeroTurmas == 1) {
             printf("% 5d. %s\n", countDisc++, currAluno->nome);
         }
         currAluno = currAluno->next;
@@ -308,8 +332,8 @@ void listAlunosExtended(ESCOLA *escola) {
     currAluno = escola->startAlunos;
     countDisc = 1;
     while (currAluno != NULL) {
-        if (currAluno->numeroDeTurmas > 1) {
-            printf("% 5d. %s (%d turmas)\n", countDisc++, currAluno->nome, currAluno->numeroDeTurmas);
+        if (currAluno->numeroTurmas > 1) {
+            printf("% 5d. %s (%d turmas)\n", countDisc++, currAluno->nome, currAluno->numeroTurmas);
         }
         currAluno = currAluno->next;
     }
@@ -378,7 +402,7 @@ void addDisciplinaEscola(ESCOLA *escola, char *nome) {
     if (!newDisciplina) return;
 
     strcpy(newDisciplina->nome, nome);
-    newDisciplina->numeroDeTurma = 0;
+    newDisciplina->numeroTurmas = 0;
     newDisciplina->startTurma = NULL;
     newDisciplina->endTurma = NULL;
     newDisciplina->next = NULL;
@@ -394,7 +418,7 @@ void addDisciplinaEscola(ESCOLA *escola, char *nome) {
         escola->endDisciplina = newDisciplina;
     }
 
-    escola->numeroDeDisciplina++;
+    escola->numeroDisciplinas++;
 }
 
 /**
@@ -434,7 +458,7 @@ int addTurmaDisciplina(DISCIPLINAS *disciplina, char *codigo) {
         disciplina->endTurma = newTurma;
     }
 
-    disciplina->numeroDeTurma++;
+    disciplina->numeroTurmas++;
     return OK;
 }
 
@@ -495,7 +519,7 @@ int addAlunoEscola(ESCOLA *escola, char *nome, int idade) {
 
     strcpy(newAluno->nome, nome);
     newAluno->idade = idade;
-    newAluno->numeroDeTurmas = 0;
+    newAluno->numeroTurmas = 0;
     newAluno->next = NULL;
     newAluno->prev = NULL;
 
@@ -559,7 +583,7 @@ int addAlunoTurma(ESCOLA *escola, TURMA *turma, char *nome) {
         alunoCopy->prev = aux;
         turma->endAlunos = alunoCopy;
     }
-    aluno->numeroDeTurmas++;
+    aluno->numeroTurmas++;
 
     turma->numeroAlunosTotal++;
     turma->numeroAlunosSemGrupo++;
@@ -578,7 +602,7 @@ int addGrupoTurma(TURMA *turma, char *nome) {
     if (!newGrupo) return ERROR;
 
     strcpy(newGrupo->nome, nome);
-    newGrupo->numeroDeAlunos = 0;
+    newGrupo->numeroAlunos = 0;
     newGrupo->start = NULL;
     newGrupo->end = NULL;
     newGrupo->next = NULL;
@@ -642,7 +666,7 @@ void addAlunoToGrupo(TURMA *turma, char *nomeAluno, char *nomeGrupo) {
         grupo->end = alunoCopy;
     }
 
-    grupo->numeroDeAlunos++;
+    grupo->numeroAlunos++;
 }
 
 /**
@@ -668,7 +692,7 @@ int removeAlunoFromGrupo(TURMA *turma, char *nomeAluno) {
                     if (currAluno->next) currAluno->next->prev = currAluno->prev;
                     else grupoCheck->end = currAluno->prev;
 
-                    grupoCheck->numeroDeAlunos--;
+                    grupoCheck->numeroAlunos--;
                     turma->numeroAlunosSemGrupo++;
                     free(currAluno);
                     break;
@@ -679,7 +703,7 @@ int removeAlunoFromGrupo(TURMA *turma, char *nomeAluno) {
         }
         return OK;
     } else {
-        return ERROR;
+        return ERR_NOT_IN_GROUP;
     }
 }
 
@@ -696,9 +720,7 @@ int removeAlunoFromGrupo(TURMA *turma, char *nomeAluno) {
  *         ERROR if the student was not found in the class or any groups.
  */
 int removeAlunoFromTurma(ESCOLA *escola, TURMA *turma, char *nomeAluno) {
-    if (removeAlunoFromGrupo(turma, nomeAluno) == ERROR) {
-        return ERROR;
-    }
+    removeAlunoFromGrupo(turma, nomeAluno);
     turma->numeroAlunosSemGrupo--;
 
     TURMA *turmaCheck = turma;
@@ -716,7 +738,7 @@ int removeAlunoFromTurma(ESCOLA *escola, TURMA *turma, char *nomeAluno) {
             turmaCheck->numeroAlunosTotal--;
 
             ALUNOS *aluno = getAlunoEscola(escola, nomeAluno);
-            aluno->numeroDeTurmas--;
+            aluno->numeroTurmas--;
             return OK;
         }
         currAluno = currAluno->next;
@@ -783,19 +805,22 @@ int removeTurmaRecursive(ESCOLA *escola, DISCIPLINAS *disc, char *cod) {
     while (currTurma != NULL) {
         if (strcmp(currTurma->codigo, cod) == 0) {
             if (currTurma->startAlunos != NULL) {
-                ALUNOS *currAluno = currTurma->startAlunos;
+                ALUNOS *nextAluno, *currAluno = currTurma->startAlunos;
 
                 while (currAluno != NULL) {
-                    removeAlunoFromTurma(escola, currTurma, currAluno->nome);
-                    currAluno = currAluno->next;
+                    printf("Removendo %s\n", currAluno->nome);
+                    nextAluno = currAluno->next;
+                    removeAlunoFromTurma(escola, currTurma, (currAluno->nome));
+                    currAluno = nextAluno;
                 }
             }
             if (currTurma->startGrupos != NULL) {
-                GRUPOS *currGrupo = currTurma->startGrupos;
+                GRUPOS *nextGrupo, *currGrupo = currTurma->startGrupos;
 
                 while (currGrupo != NULL) {
+                    nextGrupo = currGrupo->next;
                     removeGrupoFromTurma(currTurma, currGrupo->nome);
-                    currGrupo = currGrupo->next;
+                    currGrupo = nextGrupo;
                 }
             }
             if (currTurma->prev) currTurma->prev->next = currTurma->next;
@@ -804,7 +829,7 @@ int removeTurmaRecursive(ESCOLA *escola, DISCIPLINAS *disc, char *cod) {
             if (currTurma->next) currTurma->next->prev = currTurma->prev;
             else disc->endTurma = currTurma->prev;
             free(currTurma);
-            disc->numeroDeTurma--;
+            disc->numeroTurmas--;
             return OK;
         }
         currTurma = currTurma->next;
@@ -866,7 +891,6 @@ int menu_selectTurma(ESCOLA *escola, char *msg, int *discIdx) {
 void menu_addDisciplina(ESCOLA *escola) {
     char nomeDisciplina[N];
     printf("Digite o nome da disciplina: \n");
-    getchar();
     getTextInput(nomeDisciplina);
     addDisciplinaEscola(escola, nomeDisciplina);
 }
@@ -887,6 +911,7 @@ int menu_addTurma(ESCOLA *escola) {
     idx = menu_selectDisciplina(escola, "Digite o numero da disciplina que deseja adicionar a turma");
 
     printf("Digite o codigo da turma (Ex: 101, 204): \n");
+    getchar();
     getTextInput(codTurma);
 
     return addTurmaDisciplina(getDisciplinaByIndex(escola, idx), codTurma);
@@ -932,6 +957,7 @@ int menu_addAlunoToTurma(ESCOLA *escola) {
 
     listAlunos(escola);
     printf("Digite o nome do aluno:\n");
+    getchar();
     getTextInput(nome);
 
     if (addAlunoTurma(escola, turma, nome) == ERROR) {
@@ -958,6 +984,7 @@ int menu_addGrupo(ESCOLA *escola) {
     TURMA *turma = getTurmaByIndex(getDisciplinaByIndex(escola, discIdx), idx);
 
     printf("Digite o nome do grupo:\n");
+    getchar();
     getTextInput(nome);
 
     if (addGrupoTurma(turma, nome) == ERROR) {
@@ -990,6 +1017,7 @@ int menu_addAlunoToGrupo(ESCOLA *escola) {
 
     listAlunosTurma(turma);
     printf("Digite o nome do aluno:\n");
+    getchar();
     getTextInput(nomeAluno);
     printf("");
 
@@ -997,10 +1025,9 @@ int menu_addAlunoToGrupo(ESCOLA *escola) {
         return ERR_ALREADY_IN_GROUP;
     }
 
-    listGrupos(turma);
+    listGruposSimple(turma);
     printf("Digite o nome do grupo:\n");
-    fgets(nomeGrupo, sizeof(nomeGrupo), stdin);
-    nomeGrupo[strcspn(nomeGrupo, "\r\n")] = 0;
+    getTextInput(nomeGrupo);
 
     addAlunoToGrupo(turma, nomeAluno, nomeGrupo);
 
@@ -1062,7 +1089,9 @@ int menu_removeAlunoFromTurma(ESCOLA *escola) {
 
     listAlunosTurma(turma);
     printf("Digite o nome do aluno:\n");
+    getchar();
     getTextInput(nome);
+    printf("nome: %s", nome);
 
     return removeAlunoFromTurma(escola, turma, nome);
 }
@@ -1086,6 +1115,7 @@ int menu_removeAlunoFromGrupo(ESCOLA *escola) {
 
     listAlunosTurma(turma);
     printf("Digite o nome do aluno:\n");
+    getchar();
     getTextInput(nome);
 
     return removeAlunoFromGrupo(turma, nome);
@@ -1181,7 +1211,7 @@ int menu(ESCOLA *escola, char *errorMsg) {
                 case ERROR:
                     strcpy(msg, "Aluno nao encontrado");
                 default:
-
+                    strcpy(msg, "");
             }
             menu(escola, msg);
         case '7':
@@ -1191,8 +1221,11 @@ int menu(ESCOLA *escola, char *errorMsg) {
             menu(escola, msg);
             break;
         case '8':
-            if (menu_removeAlunoFromGrupo(escola) == ERROR) {
-                strcpy(msg, "Aluno nao encontrado ou nao pertence a nenhum grupo");
+            int resp = menu_removeAlunoFromGrupo(escola);
+            if (resp == ERROR) {
+                strcpy(msg, "Aluno nao encontrado");
+            } else if (resp == ERR_NOT_IN_GROUP) {
+                strcpy(msg, "Aluno nao pertence a nenhum grupo");
             }
             menu(escola, msg);
             break;
@@ -1245,7 +1278,7 @@ void createTestData(ESCOLA *escola) {
 }
 
 int main() {
-    ESCOLA escola = {.numeroDeDisciplina = 0, .startDisciplina = NULL, .endDisciplina = NULL};
+    ESCOLA escola = {.numeroDisciplinas = 0, .startDisciplina = NULL, .endDisciplina = NULL};
     strcpy(escola.nome, "Universidade de Caxias do Sul");
 
     createTestData(&escola);
