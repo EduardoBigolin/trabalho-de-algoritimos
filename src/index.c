@@ -734,11 +734,12 @@ int removeAlunoFromTurma(ESCOLA *escola, TURMA *turma, char *nomeAluno) {
             if (currAluno->next != NULL) currAluno->next->prev = currAluno->prev;
             else turma->endAlunos = currAluno->prev;
 
+            ALUNOS *aluno = getAlunoEscola(escola, nomeAluno);
+            aluno->numeroTurmas--;
+
             free(currAluno);
             turmaCheck->numeroAlunosTotal--;
 
-            ALUNOS *aluno = getAlunoEscola(escola, nomeAluno);
-            aluno->numeroTurmas--;
             return OK;
         }
         currAluno = currAluno->next;
