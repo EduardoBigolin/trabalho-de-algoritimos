@@ -606,7 +606,6 @@ int removeAlunoFromGrupo(TURMA *turma, char *nomeAluno) {
 
             while (currAluno) {
                 if (strcmp(currAluno->nome, nomeAluno) == 0) {
-
                     if (currAluno->prev) currAluno->prev->next = currAluno->next;
                     else grupoCheck->start = currAluno->next;
 
@@ -641,7 +640,6 @@ int removeAlunoFromGrupo(TURMA *turma, char *nomeAluno) {
  *         ERROR if the student was not found in the class or any groups.
  */
 int removeAlunoFromTurma(TURMA *turma, char *nomeAluno) {
-
     if (removeAlunoFromGrupo(turma, nomeAluno) == ERROR) {
         return ERROR;
     }
@@ -663,6 +661,94 @@ int removeAlunoFromTurma(TURMA *turma, char *nomeAluno) {
             return OK;
         }
         currAluno = currAluno->next;
+    }
+
+    return ERROR;
+}
+
+/**
+ * @brief Removes a group from a class (turma) identified by its name.
+ *
+ * @param turma Pointer to the class (TURMA) from which the group will be removed.
+ *              The class contains a doubly linked list of groups.
+ * @param nomeGrupo Pointer to the name of the group to be removed.
+ *                  This is matched against the group names in the class.
+ *
+ * @return OK (0) if the group is successfully removed, or ERROR (-1) if the group
+ *         is not found or the list of groups is empty.
+ */
+int removeGrupoFromTurma(TURMA *turma, char *nomeGrupo) {
+    if (turma->startGrupos == NULL) {
+        return ERROR;
+    }
+
+    GRUPOS *currGrupo = turma->startGrupos;
+
+    while (currGrupo != NULL) {
+        if (strcmp(currGrupo->nome, nomeGrupo) == 0) {
+            if (currGrupo->prev) currGrupo->prev->next = currGrupo->next;
+            else turma->startGrupos = currGrupo->next;
+
+            if (currGrupo->next) currGrupo->next->prev = currGrupo->prev;
+            else turma->endGrupos = currGrupo->prev;
+
+            free(currGrupo);
+            turma->numeroGrupo--;
+            return OK;
+        }
+        currGrupo = currGrupo->next;
+    }
+
+    return ERROR;
+}
+
+/**
+ * @brief Recursively removes a class (turma) identified by its code from the given discipline.
+ *        Frees all associated resources, including students and groups within the class.
+ *
+ * @param disc Pointer to the structure representing the discipline containing the class to be removed.
+ *             It must not be NULL and should be properly initialized.
+ * @param cod Pointer to a string containing the code of the class to be removed.
+ *            It must not be NULL and should match the code of an existing class within the discipline.
+ *
+ * @return Returns OK (0) if the class was successfully removed, or ERROR (-1) if the class with the specified code
+ *         was not found or the discipline is invalid.
+ */
+int removeTurmaRecursive(DISCIPLINAS *disc, char *cod) {
+    if (disc == NULL || disc->startTurma == NULL) {
+        return ERROR;
+    }
+
+    TURMA *currTurma = disc->startTurma;
+
+    while (currTurma != NULL) {
+        if (strcmp(currTurma->codigo, cod) == 0) {
+            if (currTurma->startAlunos != NULL) {
+                ALUNOS *currAluno = currTurma->startAlunos;
+
+                while (currAluno != NULL) {
+                    removeAlunoFromTurma(currTurma, currAluno->nome);
+                    currAluno = currAluno->next;
+                }
+            }
+            if (currTurma->startGrupos != NULL) {
+                GRUPOS *currGrupo = currTurma->startGrupos;
+
+                while (currGrupo != NULL) {
+                    removeGrupoFromTurma(currTurma, currGrupo->nome);
+                    currGrupo = currGrupo->next;
+                }
+            }
+            if (currTurma->prev) currTurma->prev->next = currTurma->next;
+            else disc->startTurma = currTurma->next;
+
+            if (currTurma->next) currTurma->next->prev = currTurma->prev;
+            else disc->endTurma = currTurma->prev;
+            free(currTurma);
+            disc->numeroDeTurma--;
+            return OK;
+        }
+        currTurma = currTurma->next;
     }
 
     return ERROR;
@@ -912,15 +998,6 @@ int menu_removeAlunoFromTurma(ESCOLA *escola) {
  * @return An integer indicating the result of the operation. Returns OK (0)
  *         if the student was successfully removed, or ERROR (-1) if the operation failed.
  */
-int menu_listaAlunoFromTurma(ESCOLA *escola) {
-  int idx, discIdx;
-  idx = menu_selectTurma(escola, "Digite o numero da turma do grupo que deseja Listar os alunos", &discIdx);
-  TURMA *turma = getTurmaByIndex(getDisciplinaByIndex(escola, discIdx), idx);
-
-  listAlunosTurma(turma);
-  return OK;
-}
-
 int menu_removeAlunoFromGrupo(ESCOLA *escola) {
     int idx, discIdx;
     char nome[N];
@@ -934,6 +1011,16 @@ int menu_removeAlunoFromGrupo(ESCOLA *escola) {
     getTextInput(nome);
 
     return removeAlunoFromGrupo(turma, nome);
+}
+
+int menu_removeTurma(ESCOLA *escola) {
+    int idx, discIdx;
+    idx = menu_selectTurma(escola, "Digite o numero da turma que deseja remover", &discIdx);
+
+    DISCIPLINAS *disc = getDisciplinaByIndex(escola, discIdx);
+    TURMA *turma = getTurmaByIndex(disc, idx);
+
+    return removeTurmaRecursive(disc, turma->codigo);
 }
 
 /**
@@ -963,8 +1050,8 @@ int menu(ESCOLA *escola, char *errorMsg) {
     printf("6. Adicionar Aluno em Grupo\n");
     printf("7. Remover Aluno de Turma\n");
     printf("8. Remover Aluno de Grupo\n");
-    printf("9. Listar Aluno de Turma");
     printf("9. Listar Aluno de Turma\n");
+    printf("0. Remover Turma\n");
 
     printf("Digite o numero correspontente com a operacao desejada (1, 2, 3, 4...) ou \"s\" para sair: \n");
     int choice = getchar();
@@ -1025,6 +1112,12 @@ int menu(ESCOLA *escola, char *errorMsg) {
             break;
         case '9':
             menu_listAlunoFromTurma(escola);
+            menu(escola, msg);
+            break;
+        case '0':
+            if (menu_removeTurma(escola) == ERROR) {
+                strcpy(msg, "Turma nao encontrada");
+            }
             menu(escola, msg);
             break;
         case 's':
