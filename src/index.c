@@ -728,10 +728,10 @@ int removeAlunoFromTurma(ESCOLA *escola, TURMA *turma, char *nomeAluno) {
 
     while (currAluno) {
         if (strcmp(currAluno->nome, nomeAluno) == 0) {
-            if (currAluno->prev) currAluno->prev->next = currAluno->next;
+            if (currAluno->prev != NULL) currAluno->prev->next = currAluno->next;
             else turma->startAlunos = currAluno->next;
 
-            if (currAluno->next) currAluno->next->prev = currAluno->prev;
+            if (currAluno->next != NULL) currAluno->next->prev = currAluno->prev;
             else turma->endAlunos = currAluno->prev;
 
             free(currAluno);
@@ -805,22 +805,20 @@ int removeTurmaRecursive(ESCOLA *escola, DISCIPLINAS *disc, char *cod) {
     while (currTurma != NULL) {
         if (strcmp(currTurma->codigo, cod) == 0) {
             if (currTurma->startAlunos != NULL) {
-                ALUNOS *nextAluno, *currAluno = currTurma->startAlunos;
+                ALUNOS *currAluno = currTurma->startAlunos;
 
                 while (currAluno != NULL) {
-                    printf("Removendo %s\n", currAluno->nome);
-                    nextAluno = currAluno->next;
-                    removeAlunoFromTurma(escola, currTurma, (currAluno->nome));
-                    currAluno = nextAluno;
+                    printf("Removendo %s da turma %s\n", currTurma->startAlunos->nome, currTurma->codigo);
+                    removeAlunoFromTurma(escola, currTurma, currTurma->startAlunos->nome);
+                    currAluno = currTurma->startAlunos;
                 }
             }
             if (currTurma->startGrupos != NULL) {
-                GRUPOS *nextGrupo, *currGrupo = currTurma->startGrupos;
+                GRUPOS *currGrupo = currTurma->startGrupos;
 
                 while (currGrupo != NULL) {
-                    nextGrupo = currGrupo->next;
-                    removeGrupoFromTurma(currTurma, currGrupo->nome);
-                    currGrupo = nextGrupo;
+                    removeGrupoFromTurma(currTurma, currTurma->startGrupos->nome);
+                    currGrupo = currTurma->startGrupos;
                 }
             }
             if (currTurma->prev) currTurma->prev->next = currTurma->next;
