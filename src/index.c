@@ -13,6 +13,7 @@
 typedef struct Alunos {
     char nome[N];
     int idade;
+    int numeroDeTurmas;
 
     struct Alunos *next;
     struct Alunos *prev;
@@ -265,6 +266,59 @@ void listAlunos(ESCOLA *escola) {
 }
 
 /**
+ * @brief Lists students from the school, categorized by the number of classes they are enrolled in.
+ *        Students are grouped into three categories: without any classes, in one class, and in multiple classes.
+ *
+ * @param escola Pointer to the ESCOLA structure containing the list of students
+ *               and their respective enrollment details.
+ */
+void listAlunosExtended(ESCOLA *escola) {
+    if (escola->startAlunos == NULL) {
+        printf("Nenhum aluno cadastrado.\n");
+        return;
+    }
+
+    printf("Alunos sem turmas:\n");
+    ALUNOS *currAluno = escola->startAlunos;
+    int countDisc = 1;
+    while (currAluno != NULL) {
+        if (currAluno->numeroDeTurmas == 0) {
+            printf("% 5d. %s\n", countDisc++, currAluno->nome);
+        }
+        currAluno = currAluno->next;
+    }
+    if (countDisc == 1) {
+        printf("     Nenhum aluno sem turmas.\n");
+    }
+
+    printf("Alunos em apenas uma turma:\n");
+    currAluno = escola->startAlunos;
+    countDisc = 1;
+    while (currAluno != NULL) {
+        if (currAluno->numeroDeTurmas == 1) {
+            printf("% 5d. %s\n", countDisc++, currAluno->nome);
+        }
+        currAluno = currAluno->next;
+    }
+    if (countDisc == 1) {
+        printf("     Nenhum aluno em apenas uma turma.\n");
+    }
+
+    printf("Alunos em mais de uma turma:\n");
+    currAluno = escola->startAlunos;
+    countDisc = 1;
+    while (currAluno != NULL) {
+        if (currAluno->numeroDeTurmas > 1) {
+            printf("% 5d. %s (%d turmas)\n", countDisc++, currAluno->nome, currAluno->numeroDeTurmas);
+        }
+        currAluno = currAluno->next;
+    }
+    if (countDisc == 1) {
+        printf("     Nenhum aluno em mais de uma turma.\n");
+    }
+}
+
+/**
  * @brief Lists all students (ALUNOS) in a given TURMA (class).
  *
  * @param turma Pointer to the TURMA structure that contains the list of students.
@@ -441,6 +495,7 @@ int addAlunoEscola(ESCOLA *escola, char *nome, int idade) {
 
     strcpy(newAluno->nome, nome);
     newAluno->idade = idade;
+    newAluno->numeroDeTurmas = 0;
     newAluno->next = NULL;
     newAluno->prev = NULL;
 
@@ -504,6 +559,7 @@ int addAlunoTurma(ESCOLA *escola, TURMA *turma, char *nome) {
         alunoCopy->prev = aux;
         turma->endAlunos = alunoCopy;
     }
+    aluno->numeroDeTurmas++;
 
     turma->numeroAlunosTotal++;
     turma->numeroAlunosSemGrupo++;
@@ -639,7 +695,7 @@ int removeAlunoFromGrupo(TURMA *turma, char *nomeAluno) {
  * @return Returns OK if the student was successfully removed;
  *         ERROR if the student was not found in the class or any groups.
  */
-int removeAlunoFromTurma(TURMA *turma, char *nomeAluno) {
+int removeAlunoFromTurma(ESCOLA *escola, TURMA *turma, char *nomeAluno) {
     if (removeAlunoFromGrupo(turma, nomeAluno) == ERROR) {
         return ERROR;
     }
@@ -658,6 +714,9 @@ int removeAlunoFromTurma(TURMA *turma, char *nomeAluno) {
 
             free(currAluno);
             turmaCheck->numeroAlunosTotal--;
+
+            ALUNOS *aluno = getAlunoEscola(escola, nomeAluno);
+            aluno->numeroDeTurmas--;
             return OK;
         }
         currAluno = currAluno->next;
@@ -714,7 +773,7 @@ int removeGrupoFromTurma(TURMA *turma, char *nomeGrupo) {
  * @return Returns OK (0) if the class was successfully removed, or ERROR (-1) if the class with the specified code
  *         was not found or the discipline is invalid.
  */
-int removeTurmaRecursive(DISCIPLINAS *disc, char *cod) {
+int removeTurmaRecursive(ESCOLA *escola, DISCIPLINAS *disc, char *cod) {
     if (disc == NULL || disc->startTurma == NULL) {
         return ERROR;
     }
@@ -727,7 +786,7 @@ int removeTurmaRecursive(DISCIPLINAS *disc, char *cod) {
                 ALUNOS *currAluno = currTurma->startAlunos;
 
                 while (currAluno != NULL) {
-                    removeAlunoFromTurma(currTurma, currAluno->nome);
+                    removeAlunoFromTurma(escola, currTurma, currAluno->nome);
                     currAluno = currAluno->next;
                 }
             }
@@ -948,12 +1007,35 @@ int menu_addAlunoToGrupo(ESCOLA *escola) {
     return OK;
 }
 
+/**
+ * @brief Displays a menu to list students either from a specific class or from the entire school.
+ *        Allows the user to choose between simple or extended listing for the school overview.
+ *
+ * @param escola Pointer to the school structure containing information about disciplines
+ *               and students.
+ * @return Returns an integer status code (e.g., OK if the operation completes successfully).
+ */
 int menu_listAlunoFromTurma(ESCOLA *escola) {
     int idx, discIdx;
-    idx = menu_selectTurma(escola, "Digite o numero da turma que deseja Listar os alunos", &discIdx);
-    TURMA *turma = getTurmaByIndex(getDisciplinaByIndex(escola, discIdx), idx);
+    char choice[N];
+    printf("Voce deseja listar alunos de uma turma ou da escola? (E/t):\n");
+    scanf("%s", choice);
 
-    listAlunosTurma(turma);
+    if (choice[0] == 't' || choice[0] == 'T') {
+        idx = menu_selectTurma(escola, "Digite o numero da turma que deseja Listar os alunos", &discIdx);
+        TURMA *turma = getTurmaByIndex(getDisciplinaByIndex(escola, discIdx), idx);
+
+        listAlunosTurma(turma);
+    } else {
+        printf("Voce deseja ver a listagem simples ou extendida? (S/e)\n");
+        scanf("%s", choice);
+        if (choice[0] == 'e' || choice[0] == 'E') {
+            listAlunosExtended(escola);
+        } else {
+            listAlunos(escola);
+        }
+    }
+
     printf("Pressione Enter para voltar ao menu: \n");
     getchar();
     getchar();
@@ -982,15 +1064,11 @@ int menu_removeAlunoFromTurma(ESCOLA *escola) {
     printf("Digite o nome do aluno:\n");
     getTextInput(nome);
 
-    return removeAlunoFromTurma(turma, nome);
+    return removeAlunoFromTurma(escola, turma, nome);
 }
 
 /**
  * @brief Removes a student from a group in the specified school.
- *
- * This function facilitates the removal of a student from a specific group
- * within a class. The user is prompted to select a class and group, and
- * input the name of the student to be removed.
  *
  * @param escola A pointer to the ESCOLA structure that contains information
  *               about the school, including its classes, disciplines, and students.
@@ -1013,6 +1091,14 @@ int menu_removeAlunoFromGrupo(ESCOLA *escola) {
     return removeAlunoFromGrupo(turma, nome);
 }
 
+/**
+ * @brief Removes a specific class (turma) from the school (escola) based on user selection.
+ *
+ * @param escola Pointer to the ESCOLA structure representing the school, which contains
+ *               all relevant data including disciplines and classes.
+ * @return Returns an integer indicating success or failure of the operation. Typically, a defined
+ *         constant like ERROR is used to indicate failure.
+ */
 int menu_removeTurma(ESCOLA *escola) {
     int idx, discIdx;
     idx = menu_selectTurma(escola, "Digite o numero da turma que deseja remover", &discIdx);
@@ -1020,7 +1106,7 @@ int menu_removeTurma(ESCOLA *escola) {
     DISCIPLINAS *disc = getDisciplinaByIndex(escola, discIdx);
     TURMA *turma = getTurmaByIndex(disc, idx);
 
-    return removeTurmaRecursive(disc, turma->codigo);
+    return removeTurmaRecursive(escola, disc, turma->codigo);
 }
 
 /**
@@ -1050,7 +1136,7 @@ int menu(ESCOLA *escola, char *errorMsg) {
     printf("6. Adicionar Aluno em Grupo\n");
     printf("7. Remover Aluno de Turma\n");
     printf("8. Remover Aluno de Grupo\n");
-    printf("9. Listar Aluno de Turma\n");
+    printf("9. Listar Alunos (Turma e Escola)\n");
     printf("0. Remover Turma\n");
 
     printf("Digite o numero correspontente com a operacao desejada (1, 2, 3, 4...) ou \"s\" para sair: \n");
