@@ -862,6 +862,18 @@ int menu_addAlunoToGrupo(ESCOLA *escola) {
     return OK;
 }
 
+int menu_listAlunoFromTurma(ESCOLA *escola) {
+    int idx, discIdx;
+    idx = menu_selectTurma(escola, "Digite o numero da turma que deseja Listar os alunos", &discIdx);
+    TURMA *turma = getTurmaByIndex(getDisciplinaByIndex(escola, discIdx), idx);
+
+    listAlunosTurma(turma);
+    printf("Pressione Enter para voltar ao menu: \n");
+    getchar();
+    getchar();
+    return OK;
+}
+
 
 /**
  * @brief Removes a student from a specific class in the school system.
@@ -883,7 +895,7 @@ int menu_removeAlunoFromTurma(ESCOLA *escola) {
     listAlunosTurma(turma);
     printf("Digite o nome do aluno:\n");
     getTextInput(nome);
-    
+
     return removeAlunoFromTurma(turma, nome);
 }
 
@@ -952,6 +964,7 @@ int menu(ESCOLA *escola, char *errorMsg) {
     printf("7. Remover Aluno de Turma\n");
     printf("8. Remover Aluno de Grupo\n");
     printf("9. Listar Aluno de Turma");
+    printf("9. Listar Aluno de Turma\n");
 
     printf("Digite o numero correspontente com a operacao desejada (1, 2, 3, 4...) ou \"s\" para sair: \n");
     int choice = getchar();
@@ -988,15 +1001,16 @@ int menu(ESCOLA *escola, char *errorMsg) {
             menu(escola, msg);
             break;
         case '6':
-            switch(menu_addAlunoToGrupo(escola)) {
+            switch (menu_addAlunoToGrupo(escola)) {
                 case ERR_ALREADY_IN_GROUP:
                     strcpy(msg, "Aluno ja pertence a um grupo");
                     break;
                 case ERROR:
                     strcpy(msg, "Aluno nao encontrado");
                 default:
+
             }
-        menu(escola, msg);
+            menu(escola, msg);
         case '7':
             if (menu_removeAlunoFromTurma(escola) == ERROR) {
                 strcpy(msg, "Aluno nao encontrado");
@@ -1008,11 +1022,9 @@ int menu(ESCOLA *escola, char *errorMsg) {
                 strcpy(msg, "Aluno nao encontrado ou nao pertence a nenhum grupo");
             }
             menu(escola, msg);
-        break;
+            break;
         case '9':
-            if(menu_listaAlunoFromTurma(escola) == ERROR){
-              strcpy(msg, "Nao possuiu alunos");
-            }
+            menu_listAlunoFromTurma(escola);
             menu(escola, msg);
             break;
         case 's':
